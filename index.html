@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard CSV • CBMERJ</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com"/>
+  <style>
+    :root{
+      --bg:#0f1418;--panel:#141a20;--panel2:#0c1116;--text:#e7edf2;--muted:#9eb0bd;
+      --primary:#c81414;--primary-dark:#8e0f0f;--accent:#d4af37;--ok:#2ebd85;--warn:#ffb020;--err:#ff5a5a;
+      --chip:#1e272f;--chip-on:#2a3946
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
+    .wrap{max-width:1280px;margin:22px auto;padding:0 16px;position:relative}
+    h1{margin:0 0 6px;font-size:24px}
+    h2{margin:10px 0 8px;font-size:18px}
+    .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .logo-fixed{position:absolute;top:0;right:16px;height:240px;width:auto;border-radius:8px;border:2px solid #2a3946;display:none;cursor:pointer}
+    .btn{background:var(--primary);border:0;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .btn.secondary{background:var(--accent);color:#000}
+    .btn.ghost{background:transparent;border:1px solid var(--muted);color:var(--text)}
+    .btn.danger{background:#7f1d1d}
+    .card{background:var(--panel);border:1px solid #1c2630;border-radius:14px;padding:14px;margin-bottom:12px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col2{display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:180px}
+    .field input,.field select{background:var(--panel2);color:var(--text);border:1px solid #1f2a35;border-radius:10px;padding:10px 12px;font-size:14px}
+    .small{font-size:12px;color:var(--muted)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{background:var(--chip);border:1px solid #2a3946;color:#cfe0ec;border-radius:999px;padding:6px 10px;cursor:pointer;font-size:13px}
+    .chip.on{background:var(--chip-on)}
+    .grid{display:grid;grid-template-columns:180px repeat(5,1fr);gap:8px;align-items:center;overflow-x:auto}
+    .grid .hh{background:#921212;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:700;font-size:13px}
+    .grid .cat{padding:6px 10px;font-size:13px}
+    .grid input{background:var(--panel2);color:var(--text);border:1px solid #1f2a35;border-radius:8px;padding:8px;text-align:center;font-size:14px}
+    .table{width:100%;border-collapse:collapse;font-size:13px}
+    .table th,.table td{border-bottom:1px solid #1b2430;padding:8px 10px;text-align:left}
+    .table thead th{background:#921212;color:#fff;position:sticky;top:0;font-weight:600}
+    .tag{display:inline-block;background:#1b2330;padding:6px 10px;border-radius:999px;color:#cfe0ec;font-size:13px;font-weight:600;border:1px solid #2a3946}
+    .toast{position:fixed;right:16px;bottom:16px;background:#162029;color:#fff;border:1px solid #2a3946;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none;z-index:50;max-width:400px}
+    canvas{background:transparent}
+    @media(max-width:768px){
+      .grid{grid-template-columns:140px repeat(5,80px)}
+      .wrap{padding:0 8px}
+      h1{font-size:20px}
+      h2{font-size:16px}
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <div class="wrap">
+    <img id="logoImg" class="logo-fixed" alt="logo" title="Clique para trocar a logo"/>
+    <input id="fileLogo" type="file" accept="image/*" style="display:none"/>
+
+    <div class="topline">
+      <div>
+        <h1>Dashboard CSV • <b>CBMERJ</b></h1>
+        <div class="small">Monitoramento de eventos - Diretoria de Pesquisa, Perícia e Ensaios</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button id="btnImport" class="btn ghost">📂 Importar CSV</button>
+      <input id="fileCSV" type="file" accept=".csv,.txt" style="display:none"/>
+      <button id="btnExportCsv" class="btn secondary">📤 Exportar CSV</button>
+      <button id="btnReset" class="btn danger">🧹 Zerar dashboard (limpar dados locais)</button>
+    </div>
+
+    <!-- Planilha Superior -->
+    <div class="card" style="margin-top:14px">
+      <h2>📋 Preenchimento Diário</h2>
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="min-width:240px">
+          <label>Data do monitoramento</label>
+          <input id="dtMonitor" type="date"/>
+          <span class="small">O Dia é derivado desta data.</span>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;overflow-x:auto">
+        <div class="grid">
+          <div></div>
+          <div class="hh">11H30MIN</div>
+          <div class="hh">16H</div>
+          <div class="hh">21H</div>
+          <div class="hh">06H</div>
+          <div class="hh">Somatório</div>
+
+          <div class="cat">Fora do parâmetro</div>
+          <input id="q_1130_fp" type="number" min="0" value="0"/>
+          <input id="q_16_fp" type="number" min="0" value="0"/>
+          <input id="q_21_fp" type="number" min="0" value="0"/>
+          <input id="q_06_fp" type="number" min="0" value="0"/>
+          <input id="q_sum_fp" type="number" min="0" value="0" disabled/>
+
+          <div class="cat">Preenchimento Remoto de formulário</div>
+          <input id="q_1130_prf" type="number" min="0" value="0"/>
+          <input id="q_16_prf" type="number" min="0" value="0"/>
+          <input id="q_21_prf" type="number" min="0" value="0"/>
+          <input id="q_06_prf" type="number" min="0" value="0"/>
+          <input id="q_sum_prf" type="number" min="0" value="0" disabled/>
+
+          <div class="cat">Preenchimento remoto sem exame de local</div>
+          <input id="q_1130_prs" type="number" min="0" value="0"/>
+          <input id="q_16_prs" type="number" min="0" value="0"/>
+          <input id="q_21_prs" type="number" min="0" value="0"/>
+          <input id="q_06_prs" type="number" min="0" value="0"/>
+          <input id="q_sum_prs" type="number" min="0" value="0" disabled/>
+
+          <div class="cat">Agendar D+1</div>
+          <input id="q_1130_ad1" type="number" min="0" value="0"/>
+          <input id="q_16_ad1" type="number" min="0" value="0"/>
+          <input id="q_21_ad1" type="number" min="0" value="0"/>
+          <input id="q_06_ad1" type="number" min="0" value="0"/>
+          <input id="q_sum_ad1" type="number" min="0" value="0" disabled/>
+
+          <div class="cat">Exame de local</div>
+          <input id="q_1130_el" type="number" min="0" value="0"/>
+          <input id="q_16_el" type="number" min="0" value="0"/>
+          <input id="q_21_el" type="number" min="0" value="0"/>
+          <input id="q_06_el" type="number" min="0" value="0"/>
+          <input id="q_sum_el" type="number" min="0" value="0" disabled/>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button id="btnEnviar" class="btn">✅ Clique para enviar</button>
+        <label class="small"><input id="autoExpand" type="checkbox" checked/> Expandir filtros/ativar chips após envio</label>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card">
+      <h2>🔍 Filtros</h2>
+      <div class="row">
+        <div class="field">
+          <label>Data mínima</label>
+          <input id="minDate" type="date"/>
+        </div>
+        <div class="field">
+          <label>Data máxima</label>
+          <input id="maxDate" type="date"/>
+        </div>
+      </div>
+      <div class="chips" id="chipsCats" style="margin-top:10px"></div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="card">
+      <h2>📊 Indicadores</h2>
+      <div class="row">
+        <div class="field"><label>Registros</label><div id="kpiReg" class="tag">0</div></div>
+        <div class="field"><label>Soma Valor</label><div id="kpiSum" class="tag">0</div></div>
+        <div class="field"><label>Dias únicos</label><div id="kpiDias" class="tag">0</div></div>
+        <div class="field"><label>Categorias</label><div id="kpiCats" class="tag">0</div></div>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="col2">
+      <div class="card"><h2>📈 Total por Dia (MM3)</h2><canvas id="chartDia"></canvas></div>
+      <div class="card"><h2>📊 Empilhado por Dia x Categoria</h2><canvas id="chartDiaCat"></canvas></div>
+    </div>
+    <div class="col2">
+      <div class="card"><h2>📊 Total por Categoria</h2><canvas id="chartCategorias"></canvas></div>
+      <div class="card"><h2>🍩 Participação por Categoria</h2><canvas id="chartPie"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>📅 Série Mensal por Categoria</h2>
+      <canvas id="chartMensal"></canvas>
+      <div class="small" style="margin-top:6px">Agrupado por ano-mês (YYYY-MM).</div>
+    </div>
+
+    <!-- Tabelas -->
+    <div class="col2">
+      <div class="card">
+        <h2>📋 Registros (últimos 1000)</h2>
+        <div class="field" style="margin-bottom:8px">
+          <label>Filtro por palavra (categoria / origem / timestamp)</label>
+          <input id="wordFilter" type="text" placeholder="Ex.: fora, D+1, planilha-superior..."/>
+        </div>
+        <div style="max-height:320px;overflow:auto">
+          <table class="table" id="tblRaw">
+            <thead><tr><th>Data do monitoramento</th><th>Dia</th><th>categoria</th><th>valor</th><th>Timestamp</th><th>origem</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📊 Pivot Dia x Categoria</h2>
+        <div style="max-height:320px;overflow:auto">
+          <table class="table" id="tblPivot">
+            <thead id="pvHead"></thead>
+            <tbody id="pvBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ========= CONFIGURAÇÃO DO ENDPOINT ========= */
+// ⚠️ IMPORTANTE: Altere apenas esta linha para mudar o webhook do Make
+const ENDPOINT_FIXO = "https://hook.us2.make.com/d97xsetndabgl6p2ffwo5lup9tpfwq8p";
+/* =========================================== */
+
+/* ========= Utilidades ========= */
+const el = (id)=>document.getElementById(id);
+function toast(msg, kind=''){ 
+  const t=el('toast'); t.textContent=msg; t.style.display='block';
+  t.style.borderColor = kind==='err'? 'var(--err)' : kind==='warn'? 'var(--warn)': '#2a3946';
+  clearTimeout(toast._h); toast._h=setTimeout(()=>t.style.display='none', 4000);
+}
+function formatDateISO(d){
+  if(!d) return '';
+  if(/\d{4}-\d{2}-\d{2}/.test(d)) return d;
+  const [dd,mm,yy] = String(d).split(/[\/\-]/);
+  if(yy && yy.length===4) return `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+  return d;
+}
+function toCSV(rows, sep=';'){ const esc=s=>'"'+String(s).replace(/"/g,'""')+'"'; return rows.map(r=>r.map(esc).join(sep)).join('\n'); }
+function yyyy_mm(dateIso){ const [y,m] = dateIso.split('-'); return `${y}-${m}`; }
+
+/* ========= Logo ========= */
+const LS_LOGO='cbmerj_logo_dataurl';
+function loadLogo(){
+  const data = localStorage.getItem(LS_LOGO);
+  const img = el('logoImg');
+  if(data){ img.src=data; img.style.display='block'; } else { img.style.display='none'; }
+}
+function handleLogoFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    localStorage.setItem(LS_LOGO, e.target.result);
+    loadLogo();
+    toast('Logo carregada e salva.');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ========= Categoria ========= */
+const CATEGORY_MAP = {
+  "Fora do parâmetro":"Fora do parâmetro",
+  "Agendar D+1":"Agendar D+1",
+  "Preenchimento Remoto de formulário":"Preenchimento Remoto de formulário",
+  "Preenchimento remoto sem exame de local":"Preenchimento remoto sem exame de local",
+  "Exame de local":"Exame de local"
+};
+
+function stripAccents(str){
+  return String(str)
+    .replace(/[ÁÀÂÃÄáàâãä]/g,'a')
+    .replace(/[ÉÈÊËéèêë]/g,'e')
+    .replace(/[ÍÌÎÏíìîï]/g,'i')
+    .replace(/[ÓÒÔÕÖóòôõö]/g,'o')
+    .replace(/[ÚÙÛÜúùûü]/g,'u')
+    .replace(/[Çç]/g,'c');
+}
+
+function normalizeCategory(raw){
+  if(!raw) return raw;
+  const trimmed = String(raw).trim();
+  if(CATEGORY_MAP[trimmed]) return CATEGORY_MAP[trimmed];
+
+  const norm = stripAccents(trimmed).toLowerCase();
+  const table = {
+    'fora do parametro':'Fora do parâmetro',
+    'agendar d+1':'Agendar D+1',
+    'preenchimento remoto de formulario':'Preenchimento Remoto de formulário',
+    'preenchimento remoto sem exame de local':'Preenchimento remoto sem exame de local',
+    'exame de local':'Exame de local'
+  };
+  return table[norm] || trimmed;
+}
+
+/* ========= Estado ========= */
+let DATA = [];
+const LS_KEY='cbmerj_dashboard_v5';
+let ACTIVE_CATS = new Set(Object.values(CATEGORY_MAP));
+let WORD_FILTER = '';
+
+function loadLS(){ 
+  try{
+    const j=JSON.parse(localStorage.getItem(LS_KEY)||'{}'); 
+    DATA=j.data||[]; 
+  }catch{ 
+    DATA=[]; 
+  } 
+}
+function saveLS(){ 
+  localStorage.setItem(LS_KEY, JSON.stringify({data:DATA})); 
+}
+
+/* ========= Filtros ========= */
+function applyFilters(){
+  const minDateInput = el('minDate').value;
+  const maxDateInput = el('maxDate').value;
+
+  let min = null;
+  if (minDateInput) {
+    min = new Date(minDateInput);
+    min.setHours(0, 0, 0, 0); // Início do dia
+  }
+
+  let max = null;
+  if (maxDateInput) {
+    max = new Date(maxDateInput);
+    max.setHours(23, 59, 59, 999); // Fim do dia
+  }
+
+  const word = WORD_FILTER.trim().toLowerCase();
+  return DATA.filter(r=>{
+    const iso = formatDateISO(r["Data do monitoramento"]) || formatDateISO(r.data_monitoramento);
+    if(!iso) return false;
+    const d = new Date(iso);
+    
+    if(min && d < min) return false;
+    if(max && d > max) return false;
+    
+    if(!ACTIVE_CATS.has(r.categoria)) return false;
+    if(word){
+      const cat = (r.categoria||'').toLowerCase();
+      const org = (r.origem||'').toLowerCase();
+      const ts  = (r.Timestamp||'').toLowerCase();
+      if(!cat.includes(word) && !org.includes(word) && !ts.includes(word)) return false;
+    }
+    return true;
+  });
+}
+
+/* ========= KPIs & Tabelas ========= */
+function recalcAll(){
+  DATA.forEach(d=> d.categoria = normalizeCategory(d.categoria));
+  const rows = applyFilters();
+
+  el('kpiReg').textContent = rows.length;
+  el('kpiSum').textContent = rows.reduce((a,b)=>a+(+b.valor||0),0);
+  el('kpiDias').textContent = new Set(rows.map(r=>r.Dia)).size;
+  el('kpiCats').textContent = new Set(rows.map(r=>r.categoria)).size;
+
+  renderTable(rows);
+  renderPivot(rows);
+  renderCharts(rows);
+  buildChips();
+  saveLS();
+}
+
+function renderTable(rows){
+  const tb = el('tblRaw').querySelector('tbody'); tb.innerHTML='';
+  for(const r of rows.slice(-1000)){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r["Data do monitoramento"]||r.data_monitoramento||''}</td><td>${r.Dia||''}</td><td>${r.categoria||''}</td><td>${r.valor||0}</td><td>${r.Timestamp||''}</td><td>${r.origem||''}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function renderPivot(rows){
+  const cats = Array.from(new Set(rows.map(r=>r.categoria)));
+  const dias = Array.from(new Set(rows.map(r=>r.Dia))).sort((a,b)=>a-b);
+  const mat = {};
+  rows.forEach(r=>{
+    mat[r.Dia] = mat[r.Dia] || {};
+    mat[r.Dia][r.categoria] = (mat[r.Dia][r.categoria]||0) + (+r.valor||0);
+  });
+  const head = `<tr><th>Dia</th>${cats.map(c=>`<th>${c}</th>`).join('')}<th>Total</th></tr>`;
+  el('pvHead').innerHTML = head;
+  const body = dias.map(d=>{
+    const cells = cats.map(c=> mat[d]?.[c] ? mat[d][c] : 0);
+    const total = cells.reduce((a,b)=>a+b,0);
+    return `<tr><td>${d}</td>${cells.map(v=>`<td>${v}</td>`).join('')}<td>${total}</td></tr>`;
+  }).join('');
+  el('pvBody').innerHTML = body;
+}
+
+/* ========= Gráficos ========= */
+let chCat, chDia, chDiaCat, chPie, chMensal;
+
+function renderCharts(rows){
+  const pal = ['#c81414','#d4af37','#2ebd85','#4aa3ff','#ff7f50','#a78bfa','#eab308','#10b981','#60a5fa','#f472b6'];
+
+  // Total por Categoria
+  const byCat = {};
+  rows.forEach(r=> byCat[r.categoria]=(byCat[r.categoria]||0)+(+r.valor||0));
+  const labelsCat = Object.keys(byCat);
+  const valuesCat = labelsCat.map(k=>byCat[k]);
+  const colorsCat = labelsCat.map((_,i)=> pal[i%pal.length]);
+  if(chCat) chCat.destroy();
+  chCat = new Chart(el('chartCategorias'), {
+    type:'bar',
+    data:{labels:labelsCat,datasets:[{label:'Total por Categoria',data:valuesCat,backgroundColor:colorsCat}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,scales:{x:{grid:{color:'#223'}},y:{grid:{color:'#223'}}}}
+  });
+
+  // Total por Dia + MM3
+  const byDay = {};
+  rows.forEach(r=> { byDay[r.Dia]=(byDay[r.Dia]||0)+(+r.valor||0); });
+  const dias = Object.keys(byDay).map(n=>+n).sort((a,b)=>a-b);
+  const serie = dias.map(d=>byDay[d]);
+  const mm3 = serie.map((v,i,arr)=> {
+    const a = arr[i-2]??null, b=arr[i-1]??null, c=v;
+    if(a==null || b==null) return null;
+    return Math.round((a+b+c)/3);
+  });
+  if(chDia) chDia.destroy();
+  chDia = new Chart(el('chartDia'), {
+    type:'line',
+    data:{labels:dias, datasets:[
+      {label:'Total por Dia', data:serie, borderColor:'#c81414', backgroundColor:'rgba(200,20,20,.2)', tension:.2},
+      {label:'MM3', data:mm3, borderColor:'#d4af37', backgroundColor:'rgba(212,175,55,.15)', spanGaps:true, borderDash:[6,4], tension:.2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true, scales:{x:{grid:{color:'#223'}}, y:{grid:{color:'#223'}}}}
+  });
+
+  // Empilhado Dia x Categoria
+  const cats = labelsCat;
+  const byDiaCat = {};
+  rows.forEach(r=>{
+    byDiaCat[r.Dia] = byDiaCat[r.Dia] || {};
+    byDiaCat[r.Dia][r.categoria] = (byDiaCat[r.Dia][r.categoria]||0) + (+r.valor||0);
+  });
+  const labelsDia = Array.from(new Set(rows.map(r=>r.Dia))).sort((a,b)=>a-b);
+  const ds = cats.map((c,i)=>({
+    label:c,
+    data: labelsDia.map(d=> (byDiaCat[d] && byDiaCat[d][c])? byDiaCat[d][c] : 0 ),
+    backgroundColor: pal[i%pal.length]
+  }));
+  if(chDiaCat) chDiaCat.destroy();
+  chDiaCat = new Chart(el('chartDiaCat'), {
+    type:'bar',
+    data:{labels:labelsDia, datasets:ds},
+    options:{responsive:true,maintainAspectRatio:true, scales:{x:{stacked:true,grid:{color:'#223'}},y:{stacked:true,grid:{color:'#223'}}}}
+  });
+
+  // Pizza
+  if(chPie) chPie.destroy();
+  chPie = new Chart(el('chartPie'), {
+    type:'doughnut',
+    data:{labels:labelsCat, datasets:[{data:valuesCat, backgroundColor:colorsCat}]},
+    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{position:'bottom'}}}
+  });
+
+  // Mensal por Categoria
+  const byYM = {};
+  rows.forEach(r=>{
+    const iso = formatDateISO(r["Data do monitoramento"]) || formatDateISO(r.data_monitoramento);
+    if(!iso) return;
+    const ym = yyyy_mm(iso);
+    byYM[ym] = byYM[ym] || {};
+    byYM[ym][r.categoria] = (byYM[ym][r.categoria]||0) + (+r.valor||0);
+  });
+  const ymLabels = Object.keys(byYM).sort();
+  const dsMensal = cats.map((c,i)=>({
+    label:c,
+    data: ymLabels.map(m=> byYM[m]?.[c] ?? 0),
+    backgroundColor: pal[i%pal.length]
+  }));
+  if(chMensal) chMensal.destroy();
+  chMensal = new Chart(el('chartMensal'), {
+    type:'bar',
+    data:{labels:ymLabels, datasets:dsMensal},
+    options:{responsive:true,maintainAspectRatio:true, scales:{x:{stacked:true,grid:{color:'#223'}},y:{stacked:true,grid:{color:'#223'}}}}
+  });
+}
+
+/* ========= CSV Import ========= */
+function autoDelimiter(sample){ return sample.includes(';')? ';' : ','; }
+function importCSVFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const txt=e.target.result;
+    const delim=autoDelimiter(txt.slice(0,300));
+    const res=Papa.parse(txt,{header:true,delimiter:delim,skipEmptyLines:true});
+   const rows = res.data.map(r=>{
+  // Normaliza as chaves do objeto para minúsculas sem acentos
+  const normObj = {};
+  Object.keys(r).forEach(k=>{
+    const nk = stripAccents(String(k).trim().toLowerCase());
+    normObj[nk] = r[k];
+  });
+
+  // pega a data de forma tolerante
+  let dm = normObj['data do monitoramento'] 
+        || normObj['data_do_monitoramento']
+        || normObj['datadomonitoramento']
+        || normObj['data']
+        || '';
+
+  // se ainda estiver vazio, tenta usar timestamp
+  let tsOrig = normObj['timestamp'] || normObj['ts'] || r['Timestamp'] || '';
+  if(!dm && tsOrig){
+    try{
+      const d = new Date(tsOrig);
+      if(!isNaN(d)){
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const yy = d.getFullYear();
+        dm = `${dd}/${mm}/${yy}`;
+      }
+    }catch(e){}
+  }
+
+  const iso = formatDateISO(dm);
+  const dia = iso
+    ? Number(iso.split('-')[2])
+    : (normObj['dia'] ? Number(normObj['dia']) : null);
+
+  const categoriaRaw = normObj['categoria'] || normObj['categoria '] || r['categoria'] || '';
+  const valorRaw     = normObj['valor'] || normObj['qtd'] || r['valor'] || 0;
+  const origemRaw    = normObj['origem'] || r['origem'] || 'csv';
+
+  return {
+    'Data do monitoramento': iso ? iso.split('-').reverse().join('/') : dm,
+    Dia: dia,
+    categoria: normalizeCategory(categoriaRaw),
+    valor: Number(valorRaw || 0),
+    Timestamp: tsOrig || new Date().toISOString(),
+    origem: origemRaw
+  };
+});
+    DATA.push(...rows);
+    toast(`✅ Importado(s) ${rows.length} registro(s).`);
+    recalcAll();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+/* ========= Planilha Superior ========= */
+function collectGrid(catKey, label){
+  const ids = {fp:['q_1130_fp','q_16_fp','q_21_fp','q_06_fp','q_sum_fp'],
+               prf:['q_1130_prf','q_16_prf','q_21_prf','q_06_prf','q_sum_prf'],
+               prs:['q_1130_prs','q_16_prs','q_21_prs','q_06_prs','q_sum_prs'],
+               ad1:['q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1','q_sum_ad1'],
+               el:['q_1130_el','q_16_el','q_21_el','q_06_el','q_sum_el'] }[catKey];
+  const [h1130,h16,h21,h06] = ids.slice(0,4).map(id=> Number(el(id).value||0));
+  const sum=h1130+h16+h21+h06; el(ids[4]).value=sum;
+  return {label,h1130,h16,h21,h06,sum};
+}
+function calcDiaFromDateInput(){ const iso=el('dtMonitor').value; return iso? Number(iso.split('-')[2]) : null; }
+
+function clearInputFields(){
+  const allFieldIds = [
+    'q_1130_fp','q_16_fp','q_21_fp','q_06_fp',
+    'q_1130_prf','q_16_prf','q_21_prf','q_06_prf',
+    'q_1130_prs','q_16_prs','q_21_prs','q_06_prs',
+    'q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1',
+    'q_1130_el','q_16_el','q_21_el','q_06_el'
+  ];
+  allFieldIds.forEach(id=> el(id).value = 0);
+  collectGrid('fp','Fora do parâmetro');
+  collectGrid('prf','Preenchimento Remoto de formulário');
+  collectGrid('prs','Preenchimento remoto sem exame de local');
+  collectGrid('ad1','Agendar D+1');
+  collectGrid('el','Exame de local');
+}
+
+/* ========= Reset Dashboard ========= */
+function resetDashboard(){
+  if(!confirm('Tem certeza que deseja zerar o dashboard?\nIsso vai limpar os dados locais. Depois, importe um CSV atualizado do Google Sheets.')) return;
+  DATA = [];
+  localStorage.removeItem(LS_KEY);
+  recalcAll();
+  toast('🧹 Dashboard zerado. Importe um CSV atualizado do Google Sheets.');
+}
+
+/* ========= Enviar ========= */
+async function enviar(){
+  const auto = el('autoExpand').checked;
+  const iso=el('dtMonitor').value;
+  
+  if(!iso){ 
+    toast('⚠️ Selecione a Data do monitoramento.','warn'); 
+    return; 
+  }
+  
+  const dia = calcDiaFromDateInput();
+  const payloadBase = {"Data do monitoramento": iso.split('-').reverse().join('/'), dia, usuario:'dashboard', data_envio:new Date().toISOString()};
+  
+  const cats=[ 
+    collectGrid('fp','Fora do parâmetro'),
+    collectGrid('prf','Preenchimento Remoto de formulário'),
+    collectGrid('prs','Preenchimento remoto sem exame de local'),
+    collectGrid('ad1','Agendar D+1'),
+    collectGrid('el','Exame de local') 
+  ];
+  
+  const records=[];
+  for(const c of cats){
+    records.push({...payloadBase, categoria:normalizeCategory(c.label),
+      quant_11h30min:c.h1130, quant_16h:c.h16, quant_21h:c.h21, quant_06h:c.h06, somatorio:c.sum});
+  }
+  
+  const totalSomatorios = records.reduce((a,b)=> a + (Number(b.somatorio)||0), 0);
+
+  // ENVIO PARA ENDPOINT FIXO
+  el('btnEnviar').disabled=true;
+  try{
+    const res = await fetch(ENDPOINT_FIXO,{method:'POST',headers:{'Content-Type':'application/json'}, body: JSON.stringify({registros:records})});
+    const text = await res.text();
+    if(!res.ok) throw new Error(`HTTP ${res.status} - ${text}`);
+    toast('✅ Enviado com sucesso! Atualizando dashboard...');
+  }catch(e){ 
+    toast('⚠️ Falha ao enviar: '+e.message+' (dados salvos localmente)','err'); 
+  }
+  finally{ el('btnEnviar').disabled=false; }
+
+  // ADICIONAR AO DATASET LOCAL
+  const timestampNow=new Date().toISOString();
+  let catsAtivadas=[];
+  
+  for(const r of records){
+    if(r.somatorio>0){
+      const newRecord = {
+        "Data do monitoramento": r["Data do monitoramento"], 
+        Dia: dia, 
+        categoria:r.categoria,
+        valor:Number(r.somatorio||0), 
+        Timestamp:timestampNow, 
+        origem:'planilha-superior'
+      };
+      DATA.push(newRecord);
+      catsAtivadas.push(r.categoria);
+    }
+  }
+
+  // AUTO-EXPAND FILTROS
+  if(auto){
+    const min = el('minDate');
+    const max = el('maxDate');
+    const dIso = iso;
+    if(min.value && new Date(min.value) > new Date(dIso)) min.value = dIso;
+    if(!min.value) min.value = dIso;
+    if(max.value && new Date(max.value) < new Date(dIso)) max.value = dIso;
+    if(!max.value) max.value = dIso;
+    catsAtivadas.forEach(c=> ACTIVE_CATS.add(c));
+  }
+
+  if(totalSomatorios===0){
+    toast('⚠️ Todos os somatórios estão 0 — nada foi adicionado ao dataset.','warn');
+  }
+
+  recalcAll();
+  clearInputFields();
+}
+
+/* ========= Exportar CSV ========= */
+function exportarCSV(){
+  const rows = applyFilters();
+  if(!rows.length){ toast('⚠️ Sem dados para exportar.','warn'); return; }
+  const headers=['Data do monitoramento','Dia','categoria','valor','Timestamp','origem'];
+  const arr=[headers].concat(rows.map(r=> headers.map(h=> r[h] ?? '')));
+  const csv=toCSV(arr,';');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const ts=new Date();
+  const name=`dashboard_cbmerj_${ts.getFullYear()}-${String(ts.getMonth()+1).padStart(2,'0')}-${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}.csv`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+  toast('✅ CSV exportado com sucesso!');
+}
+
+/* ========= Chips ========= */
+function buildChips(){
+  const cont=el('chipsCats'); cont.innerHTML='';
+  const cats=Array.from(new Set(DATA.map(r=>normalizeCategory(r.categoria))));
+  if(ACTIVE_CATS.size===0) ACTIVE_CATS=new Set(cats);
+  cats.forEach(c=>{
+    const span=document.createElement('span'); span.className='chip'+(ACTIVE_CATS.has(c)?' on':''); span.textContent=c;
+    span.onclick=()=>{ if(ACTIVE_CATS.has(c)) ACTIVE_CATS.delete(c); else ACTIVE_CATS.add(c); span.classList.toggle('on'); recalcAll(); };
+    cont.appendChild(span);
+  });
+}
+
+/* ========= Eventos ========= */
+['q_1130_fp','q_16_fp','q_21_fp','q_06_fp'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('fp','Fora do parâmetro')));
+['q_1130_prf','q_16_prf','q_21_prf','q_06_prf'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prf','Preenchimento Remoto de formulário')));
+['q_1130_prs','q_16_prs','q_21_prs','q_06_prs'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prs','Preenchimento remoto sem exame de local')));
+['q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('ad1','Agendar D+1')));
+['q_1130_el','q_16_el','q_21_el','q_06_el'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('el','Exame de local')));
+
+el('btnEnviar').addEventListener('click', enviar);
+el('btnImport').addEventListener('click', ()=> el('fileCSV').click());
+el('fileCSV').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) importCSVFile(f); e.target.value=''; });
+el('btnExportCsv').addEventListener('click', exportarCSV);
+el('btnReset').addEventListener('click', resetDashboard);
+el('minDate').addEventListener('change', recalcAll);
+el('maxDate').addEventListener('change', recalcAll);
+el('wordFilter').addEventListener('input', e=>{ WORD_FILTER=e.target.value||''; recalcAll(); });
+
+// Logo
+el('logoImg').addEventListener('click', ()=> el('fileLogo').click());
+el('fileLogo').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) handleLogoFile(f); e.target.value=''; });
+
+/* ========= Init ========= */
+(function init(){
+  loadLogo();
+  loadLS();
+
+  const today=new Date();
+  el('dtMonitor').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const mind = new Date(today); mind.setDate(today.getDate()-30);
+  el('minDate').value = `${mind.getFullYear()}-${String(mind.getMonth()+1).padStart(2,'0')}-${String(mind.getDate()).padStart(2,'0')}`;
+  el('maxDate').value = el('dtMonitor').value;
+
+  collectGrid('fp','Fora do parâmetro'); 
+  collectGrid('prf','Preenchimento Remoto de formulário'); 
+  collectGrid('prs','Preenchimento remoto sem exame de local'); 
+  collectGrid('ad1','Agendar D+1'); 
+  collectGrid('el','Exame de local');
+
+  buildChips();
+  recalcAll();
+
+  if(location.protocol==='file:'){ 
+    toast('⚠️ Você abriu via file://. Use Live Server ou http(s) para evitar CORS.','warn'); 
+  }
+})();
+</script>
+</body>
+</html>
