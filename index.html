@@ -206,12 +206,14 @@
   <div class="toast" id="toast"></div>
 
 <script>
-/* ========= CONFIGURAÇÃO DO ENDPOINT ========= */
+/* ==== CONFIGURAÇÃO DO ENDPOINT ==== */
 // ⚠️ IMPORTANTE: Altere apenas esta linha para mudar o webhook do Make
 const ENDPOINT_FIXO = "https://hook.us2.make.com/d97xsetndabgl6p2ffwo5lup9tpfwq8p";
-/* =========================================== */
+// Endpoint de LEITURA (Google Apps Script)
+const ENDPOINT_LEITURA = "https://script.google.com/macros/s/AKfycbxOM9aH5L_4WZFgSAzvqM7PYV7D2IZEvEor5Tuot7Vrv4KH6VuIaRwRimHCq1tuykiSDg/exec";
+/* ==== */
 
-/* ========= Utilidades ========= */
+/* ==== Utilidades ==== */
 const el = (id)=>document.getElementById(id);
 function toast(msg, kind=''){ 
   const t=el('toast'); t.textContent=msg; t.style.display='block';
@@ -228,7 +230,7 @@ function formatDateISO(d){
 function toCSV(rows, sep=';'){ const esc=s=>'"'+String(s).replace(/"/g,'""')+'"'; return rows.map(r=>r.map(esc).join(sep)).join('\n'); }
 function yyyy_mm(dateIso){ const [y,m] = dateIso.split('-'); return `${y}-${m}`; }
 
-/* ========= Logo ========= */
+/* ==== Logo ==== */
 const LS_LOGO='cbmerj_logo_dataurl';
 function loadLogo(){
   const data = localStorage.getItem(LS_LOGO);
@@ -245,7 +247,7 @@ function handleLogoFile(file){
   reader.readAsDataURL(file);
 }
 
-/* ========= Categoria ========= */
+/* ==== Categoria ==== */
 const CATEGORY_MAP = {
   "Fora do parâmetro":"Fora do parâmetro",
   "Agendar D+1":"Agendar D+1",
@@ -280,7 +282,51 @@ function normalizeCategory(raw){
   return table[norm] || trimmed;
 }
 
-/* ========= Estado ========= */
+/* ==== Carregar dados da planilha oficial (Apps Script) ==== */
+async function carregarDoSheets() {
+  try {
+    toast('Carregando dados da planilha oficial...');
+    const res = await fetch(ENDPOINT_LEITURA);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const linhas = await res.json();
+
+    // Transforma cada linha da planilha no formato usado pelo dashboard
+    DATA = linhas.map(r => {
+      // normaliza chaves em minúsculas sem acentos
+      const normObj = {};
+      Object.keys(r).forEach(k => {
+        const nk = stripAccents(String(k).trim().toLowerCase());
+        normObj[nk] = r[k];
+      });
+
+      let dm = normObj['data do monitoramento']
+            || normObj['data_do_monitoramento']
+            || normObj['datadomonitoramento']
+            || '';
+      const iso = formatDateISO(dm);
+      const dia = iso
+        ? Number(iso.split('-')[2])
+        : (normObj['dia'] ? Number(normObj['dia']) : null);
+
+      return {
+        'Data do monitoramento': iso ? iso.split('-').reverse().join('/') : dm,
+        Dia: dia,
+        categoria: normalizeCategory(normObj['categoria'] || ''),
+        valor: Number(normObj['valor'] || 0),
+        Timestamp: normObj['timestamp'] || new Date().toISOString(),
+        origem: normObj['origem'] || 'planilha-google'
+      };
+    });
+
+    recalcAll();
+    toast('✅ Dados carregados da planilha oficial.');
+  } catch (e) {
+    console.error(e);
+    toast('⚠️ Erro ao carregar dados da planilha: ' + e.message, 'err');
+  }
+}
+
+/* ==== Estado ==== */
 let DATA = [];
 const LS_KEY='cbmerj_dashboard_v5';
 let ACTIVE_CATS = new Set(Object.values(CATEGORY_MAP));
@@ -298,7 +344,7 @@ function saveLS(){
   localStorage.setItem(LS_KEY, JSON.stringify({data:DATA})); 
 }
 
-/* ========= Filtros ========= */
+/* ==== Filtros ==== */
 function applyFilters(){
   const minDateInput = el('minDate').value;
   const maxDateInput = el('maxDate').value;
@@ -306,13 +352,13 @@ function applyFilters(){
   let min = null;
   if (minDateInput) {
     min = new Date(minDateInput);
-    min.setHours(0, 0, 0, 0); // Início do dia
+    min.setHours(0, 0, 0, 0);
   }
 
   let max = null;
   if (maxDateInput) {
     max = new Date(maxDateInput);
-    max.setHours(23, 59, 59, 999); // Fim do dia
+    max.setHours(23, 59, 59, 999);
   }
 
   const word = WORD_FILTER.trim().toLowerCase();
@@ -320,10 +366,10 @@ function applyFilters(){
     const iso = formatDateISO(r["Data do monitoramento"]) || formatDateISO(r.data_monitoramento);
     if(!iso) return false;
     const d = new Date(iso);
-    
+
     if(min && d < min) return false;
     if(max && d > max) return false;
-    
+
     if(!ACTIVE_CATS.has(r.categoria)) return false;
     if(word){
       const cat = (r.categoria||'').toLowerCase();
@@ -335,7 +381,7 @@ function applyFilters(){
   });
 }
 
-/* ========= KPIs & Tabelas ========= */
+/* ==== KPIs & Tabelas ==== */
 function recalcAll(){
   DATA.forEach(d=> d.categoria = normalizeCategory(d.categoria));
   const rows = applyFilters();
@@ -379,7 +425,7 @@ function renderPivot(rows){
   el('pvBody').innerHTML = body;
 }
 
-/* ========= Gráficos ========= */
+/* ==== Gráficos ==== */
 let chCat, chDia, chDiaCat, chPie, chMensal;
 
 function renderCharts(rows){
@@ -469,7 +515,7 @@ function renderCharts(rows){
   });
 }
 
-/* ========= CSV Import ========= */
+/* ==== CSV Import ==== */
 function autoDelimiter(sample){ return sample.includes(';')? ';' : ','; }
 function importCSVFile(file){
   const reader=new FileReader();
@@ -478,21 +524,18 @@ function importCSVFile(file){
     const delim=autoDelimiter(txt.slice(0,300));
     const res=Papa.parse(txt,{header:true,delimiter:delim,skipEmptyLines:true});
    const rows = res.data.map(r=>{
-  // Normaliza as chaves do objeto para minúsculas sem acentos
   const normObj = {};
   Object.keys(r).forEach(k=>{
     const nk = stripAccents(String(k).trim().toLowerCase());
     normObj[nk] = r[k];
   });
 
-  // pega a data de forma tolerante
   let dm = normObj['data do monitoramento'] 
         || normObj['data_do_monitoramento']
         || normObj['datadomonitoramento']
         || normObj['data']
         || '';
 
-  // se ainda estiver vazio, tenta usar timestamp
   let tsOrig = normObj['timestamp'] || normObj['ts'] || r['Timestamp'] || '';
   if(!dm && tsOrig){
     try{
@@ -531,7 +574,7 @@ function importCSVFile(file){
   reader.readAsText(file,'UTF-8');
 }
 
-/* ========= Planilha Superior ========= */
+/* ==== Planilha Superior ==== */
 function collectGrid(catKey, label){
   const ids = {fp:['q_1130_fp','q_16_fp','q_21_fp','q_06_fp','q_sum_fp'],
                prf:['q_1130_prf','q_16_prf','q_21_prf','q_06_prf','q_sum_prf'],
@@ -560,7 +603,7 @@ function clearInputFields(){
   collectGrid('el','Exame de local');
 }
 
-/* ========= Reset Dashboard ========= */
+/* ==== Reset Dashboard ==== */
 function resetDashboard(){
   if(!confirm('Tem certeza que deseja zerar o dashboard?\nIsso vai limpar os dados locais. Depois, importe um CSV atualizado do Google Sheets.')) return;
   DATA = [];
@@ -569,19 +612,19 @@ function resetDashboard(){
   toast('🧹 Dashboard zerado. Importe um CSV atualizado do Google Sheets.');
 }
 
-/* ========= Enviar ========= */
+/* ==== Enviar ==== */
 async function enviar(){
   const auto = el('autoExpand').checked;
   const iso=el('dtMonitor').value;
-  
+
   if(!iso){ 
     toast('⚠️ Selecione a Data do monitoramento.','warn'); 
     return; 
   }
-  
+
   const dia = calcDiaFromDateInput();
   const payloadBase = {"Data do monitoramento": iso.split('-').reverse().join('/'), dia, usuario:'dashboard', data_envio:new Date().toISOString()};
-  
+
   const cats=[ 
     collectGrid('fp','Fora do parâmetro'),
     collectGrid('prf','Preenchimento Remoto de formulário'),
@@ -589,13 +632,13 @@ async function enviar(){
     collectGrid('ad1','Agendar D+1'),
     collectGrid('el','Exame de local') 
   ];
-  
+
   const records=[];
   for(const c of cats){
     records.push({...payloadBase, categoria:normalizeCategory(c.label),
       quant_11h30min:c.h1130, quant_16h:c.h16, quant_21h:c.h21, quant_06h:c.h06, somatorio:c.sum});
   }
-  
+
   const totalSomatorios = records.reduce((a,b)=> a + (Number(b.somatorio)||0), 0);
 
   // ENVIO PARA ENDPOINT FIXO
@@ -613,7 +656,7 @@ async function enviar(){
   // ADICIONAR AO DATASET LOCAL
   const timestampNow=new Date().toISOString();
   let catsAtivadas=[];
-  
+
   for(const r of records){
     if(r.somatorio>0){
       const newRecord = {
@@ -649,7 +692,7 @@ async function enviar(){
   clearInputFields();
 }
 
-/* ========= Exportar CSV ========= */
+/* ==== Exportar CSV ==== */
 function exportarCSV(){
   const rows = applyFilters();
   if(!rows.length){ toast('⚠️ Sem dados para exportar.','warn'); return; }
@@ -663,7 +706,7 @@ function exportarCSV(){
   toast('✅ CSV exportado com sucesso!');
 }
 
-/* ========= Chips ========= */
+/* ==== Chips ==== */
 function buildChips(){
   const cont=el('chipsCats'); cont.innerHTML='';
   const cats=Array.from(new Set(DATA.map(r=>normalizeCategory(r.categoria))));
@@ -675,7 +718,7 @@ function buildChips(){
   });
 }
 
-/* ========= Eventos ========= */
+/* ==== Eventos ==== */
 ['q_1130_fp','q_16_fp','q_21_fp','q_06_fp'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('fp','Fora do parâmetro')));
 ['q_1130_prf','q_16_prf','q_21_prf','q_06_prf'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prf','Preenchimento Remoto de formulário')));
 ['q_1130_prs','q_16_prs','q_21_prs','q_06_prs'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prs','Preenchimento remoto sem exame de local')));
@@ -695,7 +738,7 @@ el('wordFilter').addEventListener('input', e=>{ WORD_FILTER=e.target.value||''; 
 el('logoImg').addEventListener('click', ()=> el('fileLogo').click());
 el('fileLogo').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) handleLogoFile(f); e.target.value=''; });
 
-/* ========= Init ========= */
+/* ==== Init ==== */
 (function init(){
   loadLogo();
   loadLS();
@@ -714,6 +757,9 @@ el('fileLogo').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) 
 
   buildChips();
   recalcAll();
+
+  // Carrega automaticamente os dados da planilha oficial
+  carregarDoSheets();
 
   if(location.protocol==='file:'){ 
     toast('⚠️ Você abriu via file://. Use Live Server ou http(s) para evitar CORS.','warn'); 
