@@ -1,770 +1,960 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard CSV • CBMERJ</title>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com"/>
-  <style>
-    :root{
-      --bg:#0f1418;--panel:#141a20;--panel2:#0c1116;--text:#e7edf2;--muted:#9eb0bd;
-      --primary:#c81414;--primary-dark:#8e0f0f;--accent:#d4af37;--ok:#2ebd85;--warn:#ffb020;--err:#ff5a5a;
-      --chip:#1e272f;--chip-on:#2a3946
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
-    .wrap{max-width:1280px;margin:22px auto;padding:0 16px;position:relative}
-    h1{margin:0 0 6px;font-size:24px}
-    h2{margin:10px 0 8px;font-size:18px}
-    .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .logo-fixed{position:absolute;top:0;right:16px;height:240px;width:auto;border-radius:8px;border:2px solid #2a3946;display:none;cursor:pointer}
-    .btn{background:var(--primary);border:0;color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .btn.secondary{background:var(--accent);color:#000}
-    .btn.ghost{background:transparent;border:1px solid var(--muted);color:var(--text)}
-    .btn.danger{background:#7f1d1d}
-    .card{background:var(--panel);border:1px solid #1c2630;border-radius:14px;padding:14px;margin-bottom:12px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .col2{display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:12px}
-    .field{display:flex;flex-direction:column;gap:6px;min-width:180px}
-    .field input,.field select{background:var(--panel2);color:var(--text);border:1px solid #1f2a35;border-radius:10px;padding:10px 12px;font-size:14px}
-    .small{font-size:12px;color:var(--muted)}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{background:var(--chip);border:1px solid #2a3946;color:#cfe0ec;border-radius:999px;padding:6px 10px;cursor:pointer;font-size:13px}
-    .chip.on{background:var(--chip-on)}
-    .grid{display:grid;grid-template-columns:180px repeat(5,1fr);gap:8px;align-items:center;overflow-x:auto}
-    .grid .hh{background:#921212;color:#fff;border-radius:10px;padding:10px;text-align:center;font-weight:700;font-size:13px}
-    .grid .cat{padding:6px 10px;font-size:13px}
-    .grid input{background:var(--panel2);color:var(--text);border:1px solid #1f2a35;border-radius:8px;padding:8px;text-align:center;font-size:14px}
-    .table{width:100%;border-collapse:collapse;font-size:13px}
-    .table th,.table td{border-bottom:1px solid #1b2430;padding:8px 10px;text-align:left}
-    .table thead th{background:#921212;color:#fff;position:sticky;top:0;font-weight:600}
-    .tag{display:inline-block;background:#1b2330;padding:6px 10px;border-radius:999px;color:#cfe0ec;font-size:13px;font-weight:600;border:1px solid #2a3946}
-    .toast{position:fixed;right:16px;bottom:16px;background:#162029;color:#fff;border:1px solid #2a3946;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none;z-index:50;max-width:400px}
-    canvas{background:transparent}
-    @media(max-width:768px){
-      .grid{grid-template-columns:140px repeat(5,80px)}
-      .wrap{padding:0 8px}
-      h1{font-size:20px}
-      h2{font-size:16px}
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard CSV • CBMERJ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            color: #fff;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            color: #b0b0b0;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        button, .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52, 73, 94, 0.4); }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4); }
+        .btn-danger {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: white;
+        }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4); }
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4); }
+        .btn-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+        .btn-info:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4); }
+        input[type="file"] { display: none; }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .card h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .kpi {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.3) 0%, rgba(165, 42, 42, 0.3) 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #8B0000;
+        }
+        .kpi-label {
+            font-size: 0.85rem;
+            color: #b0b0b0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            height: 400px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            background: rgba(139, 0, 0, 0.3);
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        tr:hover { background: rgba(255, 255, 255, 0.05); }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            font-size: 0.85rem;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .filter-group input, .filter-group select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .category-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(139, 0, 0, 0.3);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        .chip:hover { border-color: #8B0000; }
+        .chip.active {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            border-color: #A52A2A;
+        }
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.2);
+            border-left: 4px solid #f39c12;
+            color: #f39c12;
+        }
+        .alert-success {
+            background: rgba(39, 174, 96, 0.2);
+            border-left: 4px solid #27ae60;
+            color: #27ae60;
+        }
+        .alert-error {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        /* Estilos para Preenchimento Diário */
+        .daily-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .form-date {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-date label {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-date input {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            width: 200px;
+        }
+        .day-info {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            margin-top: 5px;
+        }
+        .spreadsheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .spreadsheet-table th {
+            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .spreadsheet-table td {
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .spreadsheet-table td:first-child {
+            padding: 12px;
+            font-weight: 500;
+            color: #e0e0e0;
+            background: rgba(139, 0, 0, 0.2);
+        }
+        .spreadsheet-table input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .spreadsheet-table input[type="number"]:focus {
+            outline: 2px solid #8B0000;
+            background: rgba(139, 0, 0, 0.1);
+        }
+        .spreadsheet-table .total-col {
+            background: rgba(139, 0, 0, 0.3);
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+        .submit-row {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .endpoint-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .endpoint-selector label {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+        .endpoint-selector select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <img id="logoImg" class="logo-fixed" alt="logo" title="Clique para trocar a logo"/>
-    <input id="fileLogo" type="file" accept="image/*" style="display:none"/>
+    <div class="container">
+        <h1>Dashboard CSV • CBMERJ</h1>
+        <p class="subtitle">Monitoramento de eventos - Diretoria de Pesquisa, Perícia e Ensaios</p>
 
-    <div class="topline">
-      <div>
-        <h1>Dashboard CSV • <b>CBMERJ</b></h1>
-        <div class="small">Monitoramento de eventos - Diretoria de Pesquisa, Perícia e Ensaios</div>
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <button id="btnImport" class="btn ghost">📂 Importar CSV</button>
-      <input id="fileCSV" type="file" accept=".csv,.txt" style="display:none"/>
-      <button id="btnExportCsv" class="btn secondary">📤 Exportar CSV</button>
-      <button id="btnReset" class="btn danger">🧹 Zerar dashboard (limpar dados locais)</button>
-    </div>
-
-    <!-- Planilha Superior -->
-    <div class="card" style="margin-top:14px">
-      <h2>📋 Preenchimento Diário</h2>
-      <div class="row" style="align-items:flex-end">
-        <div class="field" style="min-width:240px">
-          <label>Data do monitoramento</label>
-          <input id="dtMonitor" type="date"/>
-          <span class="small">O Dia é derivado desta data.</span>
+        <div id="fileProtocolWarning" style="display: none;" class="alert alert-warning">
+            ⚠️ <strong>Atenção:</strong> Você está acessando o arquivo diretamente (file://). Para enviar dados ao Apps Script, abra via servidor local (Live Server, Python http.server, etc).
         </div>
-      </div>
 
-      <div style="margin-top:16px;overflow-x:auto">
-        <div class="grid">
-          <div></div>
-          <div class="hh">11H30MIN</div>
-          <div class="hh">16H</div>
-          <div class="hh">21H</div>
-          <div class="hh">06H</div>
-          <div class="hh">Somatório</div>
-
-          <div class="cat">Fora do parâmetro</div>
-          <input id="q_1130_fp" type="number" min="0" value="0"/>
-          <input id="q_16_fp" type="number" min="0" value="0"/>
-          <input id="q_21_fp" type="number" min="0" value="0"/>
-          <input id="q_06_fp" type="number" min="0" value="0"/>
-          <input id="q_sum_fp" type="number" min="0" value="0" disabled/>
-
-          <div class="cat">Preenchimento Remoto de formulário</div>
-          <input id="q_1130_prf" type="number" min="0" value="0"/>
-          <input id="q_16_prf" type="number" min="0" value="0"/>
-          <input id="q_21_prf" type="number" min="0" value="0"/>
-          <input id="q_06_prf" type="number" min="0" value="0"/>
-          <input id="q_sum_prf" type="number" min="0" value="0" disabled/>
-
-          <div class="cat">Preenchimento remoto sem exame de local</div>
-          <input id="q_1130_prs" type="number" min="0" value="0"/>
-          <input id="q_16_prs" type="number" min="0" value="0"/>
-          <input id="q_21_prs" type="number" min="0" value="0"/>
-          <input id="q_06_prs" type="number" min="0" value="0"/>
-          <input id="q_sum_prs" type="number" min="0" value="0" disabled/>
-
-          <div class="cat">Agendar D+1</div>
-          <input id="q_1130_ad1" type="number" min="0" value="0"/>
-          <input id="q_16_ad1" type="number" min="0" value="0"/>
-          <input id="q_21_ad1" type="number" min="0" value="0"/>
-          <input id="q_06_ad1" type="number" min="0" value="0"/>
-          <input id="q_sum_ad1" type="number" min="0" value="0" disabled/>
-
-          <div class="cat">Exame de local</div>
-          <input id="q_1130_el" type="number" min="0" value="0"/>
-          <input id="q_16_el" type="number" min="0" value="0"/>
-          <input id="q_21_el" type="number" min="0" value="0"/>
-          <input id="q_06_el" type="number" min="0" value="0"/>
-          <input id="q_sum_el" type="number" min="0" value="0" disabled/>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                📁 Importar CSV
+            </button>
+            <input type="file" id="fileInput" accept=".csv" onchange="handleFileUpload(event)">
+            <button class="btn btn-secondary" onclick="exportarCSV()">
+                💾 Exportar CSV
+            </button>
+            <button class="btn btn-danger" onclick="zerarDashboard()">
+                🗑️ Zerar dashboard (limpar dados locais)
+            </button>
         </div>
-      </div>
 
-      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button id="btnEnviar" class="btn">✅ Clique para enviar</button>
-        <label class="small"><input id="autoExpand" type="checkbox" checked/> Expandir filtros/ativar chips após envio</label>
-      </div>
-    </div>
+        <!-- PREENCHIMENTO DIÁRIO -->
+        <div class="card">
+            <h2>📋 Preenchimento Diário</h2>
 
-    <!-- Filtros -->
-    <div class="card">
-      <h2>🔍 Filtros</h2>
-      <div class="row">
-        <div class="field">
-          <label>Data mínima</label>
-          <input id="minDate" type="date"/>
+            <div class="endpoint-selector">
+                <label>Endpoint (Produção/Homolog):</label>
+                <select id="endpointSelector">
+                    <option value="https://script.google.com/macros/s/AKfycbziwpbIZIzZ0K6Wc2hoDVeousqGnBnqDK5koNKu2OMFkKVtwo2vxIVEgjNdFvHuPNU6tA/exec">Produção</option>
+                </select>
+                <button class="btn btn-info" onclick="testarConexao()">🔌 Testar Conexão com o Apps Script</button>
+            </div>
+
+            <div class="daily-form">
+                <div class="form-header">
+                    <div class="form-date">
+                        <label>Data do monitoramento</label>
+                        <input type="date" id="dataMonitoramento" onchange="calcularDia()">
+                        <div class="day-info" id="diaInfo">O Dia é derivado desta data.</div>
+                    </div>
+                </div>
+
+                <table class="spreadsheet-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 250px;"></th>
+                            <th>11H30MIN</th>
+                            <th>16H</th>
+                            <th>21H</th>
+                            <th>06H</th>
+                            <th style="background: #6B0000;">Somatório</th>
+                        </tr>
+                    </thead>
+                    <tbody id="spreadsheetBody">
+                        <tr>
+                            <td>Fora do parâmetro</td>
+                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="16h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="21h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="06h" oninput="calcularSomatorio(this)"></td>
+                            <td class="total-col" data-category="Fora do parâmetro">0</td>
+                        </tr>
+                        <tr>
+                            <td>Preenchimento Remoto de formulário</td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="16h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="21h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="06h" oninput="calcularSomatorio(this)"></td>
+                            <td class="total-col" data-category="Preenchimento Remoto de formulário">0</td>
+                        </tr>
+                        <tr>
+                            <td>Preenchimento remoto sem exame de local</td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="16h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="21h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="06h" oninput="calcularSomatorio(this)"></td>
+                            <td class="total-col" data-category="Preenchimento remoto sem exame de local">0</td>
+                        </tr>
+                        <tr>
+                            <td>Agendar D+1</td>
+                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="16h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="21h" oninput="calcularSomatorio(this)"></td>
+                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="06h" oninput="calcularSomatorio(this)"></td>
+                            <td class="total-col" data-category="Agendar D+1">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="submit-row">
+                    <button class="btn btn-success" onclick="enviarDadosPlanilha()">✅ Clique para enviar</button>
+                </div>
+            </div>
         </div>
-        <div class="field">
-          <label>Data máxima</label>
-          <input id="maxDate" type="date"/>
+
+        <!-- FILTROS -->
+        <div class="card">
+            <h2>🔍 Filtros</h2>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Modo de Importação</label>
+                    <select id="importMode">
+                        <option value="replace">Substituir dados</option>
+                        <option value="append">Adicionar aos dados existentes</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Remover Duplicatas</label>
+                    <select id="removeDuplicates">
+                        <option value="yes">Sim</option>
+                        <option value="no">Não</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Dia Mínimo</label>
+                    <input type="number" id="minDay" placeholder="Ex: 1" oninput="aplicarFiltros()">
+                </div>
+                <div class="filter-group">
+                    <label>Dia Máximo</label>
+                    <input type="number" id="maxDay" placeholder="Ex: 30" oninput="aplicarFiltros()">
+                </div>
+            </div>
+            <div class="category-chips" id="categoryChips"></div>
         </div>
-      </div>
-      <div class="chips" id="chipsCats" style="margin-top:10px"></div>
-    </div>
 
-    <!-- KPIs -->
-    <div class="card">
-      <h2>📊 Indicadores</h2>
-      <div class="row">
-        <div class="field"><label>Registros</label><div id="kpiReg" class="tag">0</div></div>
-        <div class="field"><label>Soma Valor</label><div id="kpiSum" class="tag">0</div></div>
-        <div class="field"><label>Dias únicos</label><div id="kpiDias" class="tag">0</div></div>
-        <div class="field"><label>Categorias</label><div id="kpiCats" class="tag">0</div></div>
-      </div>
-    </div>
+        <!-- KPIs -->
+        <div class="kpis" id="kpis"></div>
 
-    <!-- Gráficos -->
-    <div class="col2">
-      <div class="card"><h2>📈 Total por Dia (MM3)</h2><canvas id="chartDia"></canvas></div>
-      <div class="card"><h2>📊 Empilhado por Dia x Categoria</h2><canvas id="chartDiaCat"></canvas></div>
-    </div>
-    <div class="col2">
-      <div class="card"><h2>📊 Total por Categoria</h2><canvas id="chartCategorias"></canvas></div>
-      <div class="card"><h2>🍩 Participação por Categoria</h2><canvas id="chartPie"></canvas></div>
-    </div>
-    <div class="card">
-      <h2>📅 Série Mensal por Categoria</h2>
-      <canvas id="chartMensal"></canvas>
-      <div class="small" style="margin-top:6px">Agrupado por ano-mês (YYYY-MM).</div>
-    </div>
-
-    <!-- Tabelas -->
-    <div class="col2">
-      <div class="card">
-        <h2>📋 Registros (últimos 1000)</h2>
-        <div class="field" style="margin-bottom:8px">
-          <label>Filtro por palavra (categoria / origem / timestamp)</label>
-          <input id="wordFilter" type="text" placeholder="Ex.: fora, D+1, planilha-superior..."/>
+        <!-- GRÁFICOS -->
+        <div class="charts">
+            <div class="chart-container">
+                <canvas id="chartPorDia"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartPorCategoria"></canvas>
+            </div>
         </div>
-        <div style="max-height:320px;overflow:auto">
-          <table class="table" id="tblRaw">
-            <thead><tr><th>Data do monitoramento</th><th>Dia</th><th>categoria</th><th>valor</th><th>Timestamp</th><th>origem</th></tr></thead>
-            <tbody></tbody>
-          </table>
+
+        <!-- TABELA -->
+        <div class="card">
+            <h2>📊 Dados Detalhados</h2>
+            <div style="overflow-x: auto;">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Dia</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
-      </div>
-      <div class="card">
-        <h2>📊 Pivot Dia x Categoria</h2>
-        <div style="max-height:320px;overflow:auto">
-          <table class="table" id="tblPivot">
-            <thead id="pvHead"></thead>
-            <tbody id="pvBody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-<script>
-/* ==== CONFIGURAÇÃO DO ENDPOINT ==== */
-// ⚠️ IMPORTANTE: Altere apenas esta linha para mudar o webhook do Make
-const ENDPOINT_FIXO = "https://hook.us2.make.com/d97xsetndabgl6p2ffwo5lup9tpfwq8p";
-// Endpoint de LEITURA (Google Apps Script)
-const ENDPOINT_LEITURA = "https://script.google.com/macros/s/AKfycbxOM9aH5L_4WZFgSAzvqM7PYV7D2IZEvEor5Tuot7Vrv4KH6VuIaRwRimHCq1tuykiSDg/exec";
-/* ==== */
-
-/* ==== Utilidades ==== */
-const el = (id)=>document.getElementById(id);
-function toast(msg, kind=''){ 
-  const t=el('toast'); t.textContent=msg; t.style.display='block';
-  t.style.borderColor = kind==='err'? 'var(--err)' : kind==='warn'? 'var(--warn)': '#2a3946';
-  clearTimeout(toast._h); toast._h=setTimeout(()=>t.style.display='none', 4000);
-}
-function formatDateISO(d){
-  if(!d) return '';
-  if(/\d{4}-\d{2}-\d{2}/.test(d)) return d;
-  const [dd,mm,yy] = String(d).split(/[\/\-]/);
-  if(yy && yy.length===4) return `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
-  return d;
-}
-function toCSV(rows, sep=';'){ const esc=s=>'"'+String(s).replace(/"/g,'""')+'"'; return rows.map(r=>r.map(esc).join(sep)).join('\n'); }
-function yyyy_mm(dateIso){ const [y,m] = dateIso.split('-'); return `${y}-${m}`; }
-
-/* ==== Logo ==== */
-const LS_LOGO='cbmerj_logo_dataurl';
-function loadLogo(){
-  const data = localStorage.getItem(LS_LOGO);
-  const img = el('logoImg');
-  if(data){ img.src=data; img.style.display='block'; } else { img.style.display='none'; }
-}
-function handleLogoFile(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    localStorage.setItem(LS_LOGO, e.target.result);
-    loadLogo();
-    toast('Logo carregada e salva.');
-  };
-  reader.readAsDataURL(file);
-}
-
-/* ==== Categoria ==== */
-const CATEGORY_MAP = {
-  "Fora do parâmetro":"Fora do parâmetro",
-  "Agendar D+1":"Agendar D+1",
-  "Preenchimento Remoto de formulário":"Preenchimento Remoto de formulário",
-  "Preenchimento remoto sem exame de local":"Preenchimento remoto sem exame de local",
-  "Exame de local":"Exame de local"
-};
-
-function stripAccents(str){
-  return String(str)
-    .replace(/[ÁÀÂÃÄáàâãä]/g,'a')
-    .replace(/[ÉÈÊËéèêë]/g,'e')
-    .replace(/[ÍÌÎÏíìîï]/g,'i')
-    .replace(/[ÓÒÔÕÖóòôõö]/g,'o')
-    .replace(/[ÚÙÛÜúùûü]/g,'u')
-    .replace(/[Çç]/g,'c');
-}
-
-function normalizeCategory(raw){
-  if(!raw) return raw;
-  const trimmed = String(raw).trim();
-  if(CATEGORY_MAP[trimmed]) return CATEGORY_MAP[trimmed];
-
-  const norm = stripAccents(trimmed).toLowerCase();
-  const table = {
-    'fora do parametro':'Fora do parâmetro',
-    'agendar d+1':'Agendar D+1',
-    'preenchimento remoto de formulario':'Preenchimento Remoto de formulário',
-    'preenchimento remoto sem exame de local':'Preenchimento remoto sem exame de local',
-    'exame de local':'Exame de local'
-  };
-  return table[norm] || trimmed;
-}
-
-/* ==== Carregar dados da planilha oficial (Apps Script) ==== */
-async function carregarDoSheets() {
-  try {
-    toast('Carregando dados da planilha oficial...');
-    const res = await fetch(ENDPOINT_LEITURA);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const linhas = await res.json();
-
-    // Transforma cada linha da planilha no formato usado pelo dashboard
-    DATA = linhas.map(r => {
-      // normaliza chaves em minúsculas sem acentos
-      const normObj = {};
-      Object.keys(r).forEach(k => {
-        const nk = stripAccents(String(k).trim().toLowerCase());
-        normObj[nk] = r[k];
-      });
-
-      let dm = normObj['data do monitoramento']
-            || normObj['data_do_monitoramento']
-            || normObj['datadomonitoramento']
-            || '';
-      const iso = formatDateISO(dm);
-      const dia = iso
-        ? Number(iso.split('-')[2])
-        : (normObj['dia'] ? Number(normObj['dia']) : null);
-
-      return {
-        'Data do monitoramento': iso ? iso.split('-').reverse().join('/') : dm,
-        Dia: dia,
-        categoria: normalizeCategory(normObj['categoria'] || ''),
-        valor: Number(normObj['valor'] || 0),
-        Timestamp: normObj['timestamp'] || new Date().toISOString(),
-        origem: normObj['origem'] || 'planilha-google'
-      };
-    });
-
-    recalcAll();
-    toast('✅ Dados carregados da planilha oficial.');
-  } catch (e) {
-    console.error(e);
-    toast('⚠️ Erro ao carregar dados da planilha: ' + e.message, 'err');
-  }
-}
-
-/* ==== Estado ==== */
-let DATA = [];
-const LS_KEY='cbmerj_dashboard_v5';
-let ACTIVE_CATS = new Set(Object.values(CATEGORY_MAP));
-let WORD_FILTER = '';
-
-function loadLS(){ 
-  try{
-    const j=JSON.parse(localStorage.getItem(LS_KEY)||'{}'); 
-    DATA=j.data||[]; 
-  }catch{ 
-    DATA=[]; 
-  } 
-}
-function saveLS(){ 
-  localStorage.setItem(LS_KEY, JSON.stringify({data:DATA})); 
-}
-
-/* ==== Filtros ==== */
-function applyFilters(){
-  const minDateInput = el('minDate').value;
-  const maxDateInput = el('maxDate').value;
-
-  let min = null;
-  if (minDateInput) {
-    min = new Date(minDateInput);
-    min.setHours(0, 0, 0, 0);
-  }
-
-  let max = null;
-  if (maxDateInput) {
-    max = new Date(maxDateInput);
-    max.setHours(23, 59, 59, 999);
-  }
-
-  const word = WORD_FILTER.trim().toLowerCase();
-  return DATA.filter(r=>{
-    const iso = formatDateISO(r["Data do monitoramento"]) || formatDateISO(r.data_monitoramento);
-    if(!iso) return false;
-    const d = new Date(iso);
-
-    if(min && d < min) return false;
-    if(max && d > max) return false;
-
-    if(!ACTIVE_CATS.has(r.categoria)) return false;
-    if(word){
-      const cat = (r.categoria||'').toLowerCase();
-      const org = (r.origem||'').toLowerCase();
-      const ts  = (r.Timestamp||'').toLowerCase();
-      if(!cat.includes(word) && !org.includes(word) && !ts.includes(word)) return false;
-    }
-    return true;
-  });
-}
-
-/* ==== KPIs & Tabelas ==== */
-function recalcAll(){
-  DATA.forEach(d=> d.categoria = normalizeCategory(d.categoria));
-  const rows = applyFilters();
-
-  el('kpiReg').textContent = rows.length;
-  el('kpiSum').textContent = rows.reduce((a,b)=>a+(+b.valor||0),0);
-  el('kpiDias').textContent = new Set(rows.map(r=>r.Dia)).size;
-  el('kpiCats').textContent = new Set(rows.map(r=>r.categoria)).size;
-
-  renderTable(rows);
-  renderPivot(rows);
-  renderCharts(rows);
-  buildChips();
-  saveLS();
-}
-
-function renderTable(rows){
-  const tb = el('tblRaw').querySelector('tbody'); tb.innerHTML='';
-  for(const r of rows.slice(-1000)){
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r["Data do monitoramento"]||r.data_monitoramento||''}</td><td>${r.Dia||''}</td><td>${r.categoria||''}</td><td>${r.valor||0}</td><td>${r.Timestamp||''}</td><td>${r.origem||''}</td>`;
-    tb.appendChild(tr);
-  }
-}
-
-function renderPivot(rows){
-  const cats = Array.from(new Set(rows.map(r=>r.categoria)));
-  const dias = Array.from(new Set(rows.map(r=>r.Dia))).sort((a,b)=>a-b);
-  const mat = {};
-  rows.forEach(r=>{
-    mat[r.Dia] = mat[r.Dia] || {};
-    mat[r.Dia][r.categoria] = (mat[r.Dia][r.categoria]||0) + (+r.valor||0);
-  });
-  const head = `<tr><th>Dia</th>${cats.map(c=>`<th>${c}</th>`).join('')}<th>Total</th></tr>`;
-  el('pvHead').innerHTML = head;
-  const body = dias.map(d=>{
-    const cells = cats.map(c=> mat[d]?.[c] ? mat[d][c] : 0);
-    const total = cells.reduce((a,b)=>a+b,0);
-    return `<tr><td>${d}</td>${cells.map(v=>`<td>${v}</td>`).join('')}<td>${total}</td></tr>`;
-  }).join('');
-  el('pvBody').innerHTML = body;
-}
-
-/* ==== Gráficos ==== */
-let chCat, chDia, chDiaCat, chPie, chMensal;
-
-function renderCharts(rows){
-  const pal = ['#c81414','#d4af37','#2ebd85','#4aa3ff','#ff7f50','#a78bfa','#eab308','#10b981','#60a5fa','#f472b6'];
-
-  // Total por Categoria
-  const byCat = {};
-  rows.forEach(r=> byCat[r.categoria]=(byCat[r.categoria]||0)+(+r.valor||0));
-  const labelsCat = Object.keys(byCat);
-  const valuesCat = labelsCat.map(k=>byCat[k]);
-  const colorsCat = labelsCat.map((_,i)=> pal[i%pal.length]);
-  if(chCat) chCat.destroy();
-  chCat = new Chart(el('chartCategorias'), {
-    type:'bar',
-    data:{labels:labelsCat,datasets:[{label:'Total por Categoria',data:valuesCat,backgroundColor:colorsCat}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,scales:{x:{grid:{color:'#223'}},y:{grid:{color:'#223'}}}}
-  });
-
-  // Total por Dia + MM3
-  const byDay = {};
-  rows.forEach(r=> { byDay[r.Dia]=(byDay[r.Dia]||0)+(+r.valor||0); });
-  const dias = Object.keys(byDay).map(n=>+n).sort((a,b)=>a-b);
-  const serie = dias.map(d=>byDay[d]);
-  const mm3 = serie.map((v,i,arr)=> {
-    const a = arr[i-2]??null, b=arr[i-1]??null, c=v;
-    if(a==null || b==null) return null;
-    return Math.round((a+b+c)/3);
-  });
-  if(chDia) chDia.destroy();
-  chDia = new Chart(el('chartDia'), {
-    type:'line',
-    data:{labels:dias, datasets:[
-      {label:'Total por Dia', data:serie, borderColor:'#c81414', backgroundColor:'rgba(200,20,20,.2)', tension:.2},
-      {label:'MM3', data:mm3, borderColor:'#d4af37', backgroundColor:'rgba(212,175,55,.15)', spanGaps:true, borderDash:[6,4], tension:.2}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true, scales:{x:{grid:{color:'#223'}}, y:{grid:{color:'#223'}}}}
-  });
-
-  // Empilhado Dia x Categoria
-  const cats = labelsCat;
-  const byDiaCat = {};
-  rows.forEach(r=>{
-    byDiaCat[r.Dia] = byDiaCat[r.Dia] || {};
-    byDiaCat[r.Dia][r.categoria] = (byDiaCat[r.Dia][r.categoria]||0) + (+r.valor||0);
-  });
-  const labelsDia = Array.from(new Set(rows.map(r=>r.Dia))).sort((a,b)=>a-b);
-  const ds = cats.map((c,i)=>({
-    label:c,
-    data: labelsDia.map(d=> (byDiaCat[d] && byDiaCat[d][c])? byDiaCat[d][c] : 0 ),
-    backgroundColor: pal[i%pal.length]
-  }));
-  if(chDiaCat) chDiaCat.destroy();
-  chDiaCat = new Chart(el('chartDiaCat'), {
-    type:'bar',
-    data:{labels:labelsDia, datasets:ds},
-    options:{responsive:true,maintainAspectRatio:true, scales:{x:{stacked:true,grid:{color:'#223'}},y:{stacked:true,grid:{color:'#223'}}}}
-  });
-
-  // Pizza
-  if(chPie) chPie.destroy();
-  chPie = new Chart(el('chartPie'), {
-    type:'doughnut',
-    data:{labels:labelsCat, datasets:[{data:valuesCat, backgroundColor:colorsCat}]},
-    options:{responsive:true,maintainAspectRatio:true, plugins:{legend:{position:'bottom'}}}
-  });
-
-  // Mensal por Categoria
-  const byYM = {};
-  rows.forEach(r=>{
-    const iso = formatDateISO(r["Data do monitoramento"]) || formatDateISO(r.data_monitoramento);
-    if(!iso) return;
-    const ym = yyyy_mm(iso);
-    byYM[ym] = byYM[ym] || {};
-    byYM[ym][r.categoria] = (byYM[ym][r.categoria]||0) + (+r.valor||0);
-  });
-  const ymLabels = Object.keys(byYM).sort();
-  const dsMensal = cats.map((c,i)=>({
-    label:c,
-    data: ymLabels.map(m=> byYM[m]?.[c] ?? 0),
-    backgroundColor: pal[i%pal.length]
-  }));
-  if(chMensal) chMensal.destroy();
-  chMensal = new Chart(el('chartMensal'), {
-    type:'bar',
-    data:{labels:ymLabels, datasets:dsMensal},
-    options:{responsive:true,maintainAspectRatio:true, scales:{x:{stacked:true,grid:{color:'#223'}},y:{stacked:true,grid:{color:'#223'}}}}
-  });
-}
-
-/* ==== CSV Import ==== */
-function autoDelimiter(sample){ return sample.includes(';')? ';' : ','; }
-function importCSVFile(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const txt=e.target.result;
-    const delim=autoDelimiter(txt.slice(0,300));
-    const res=Papa.parse(txt,{header:true,delimiter:delim,skipEmptyLines:true});
-   const rows = res.data.map(r=>{
-  const normObj = {};
-  Object.keys(r).forEach(k=>{
-    const nk = stripAccents(String(k).trim().toLowerCase());
-    normObj[nk] = r[k];
-  });
-
-  let dm = normObj['data do monitoramento'] 
-        || normObj['data_do_monitoramento']
-        || normObj['datadomonitoramento']
-        || normObj['data']
-        || '';
-
-  let tsOrig = normObj['timestamp'] || normObj['ts'] || r['Timestamp'] || '';
-  if(!dm && tsOrig){
-    try{
-      const d = new Date(tsOrig);
-      if(!isNaN(d)){
-        const dd = String(d.getDate()).padStart(2,'0');
-        const mm = String(d.getMonth()+1).padStart(2,'0');
-        const yy = d.getFullYear();
-        dm = `${dd}/${mm}/${yy}`;
-      }
-    }catch(e){}
-  }
-
-  const iso = formatDateISO(dm);
-  const dia = iso
-    ? Number(iso.split('-')[2])
-    : (normObj['dia'] ? Number(normObj['dia']) : null);
-
-  const categoriaRaw = normObj['categoria'] || normObj['categoria '] || r['categoria'] || '';
-  const valorRaw     = normObj['valor'] || normObj['qtd'] || r['valor'] || 0;
-  const origemRaw    = normObj['origem'] || r['origem'] || 'csv';
-
-  return {
-    'Data do monitoramento': iso ? iso.split('-').reverse().join('/') : dm,
-    Dia: dia,
-    categoria: normalizeCategory(categoriaRaw),
-    valor: Number(valorRaw || 0),
-    Timestamp: tsOrig || new Date().toISOString(),
-    origem: origemRaw
-  };
-});
-    DATA.push(...rows);
-    toast(`✅ Importado(s) ${rows.length} registro(s).`);
-    recalcAll();
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-/* ==== Planilha Superior ==== */
-function collectGrid(catKey, label){
-  const ids = {fp:['q_1130_fp','q_16_fp','q_21_fp','q_06_fp','q_sum_fp'],
-               prf:['q_1130_prf','q_16_prf','q_21_prf','q_06_prf','q_sum_prf'],
-               prs:['q_1130_prs','q_16_prs','q_21_prs','q_06_prs','q_sum_prs'],
-               ad1:['q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1','q_sum_ad1'],
-               el:['q_1130_el','q_16_el','q_21_el','q_06_el','q_sum_el'] }[catKey];
-  const [h1130,h16,h21,h06] = ids.slice(0,4).map(id=> Number(el(id).value||0));
-  const sum=h1130+h16+h21+h06; el(ids[4]).value=sum;
-  return {label,h1130,h16,h21,h06,sum};
-}
-function calcDiaFromDateInput(){ const iso=el('dtMonitor').value; return iso? Number(iso.split('-')[2]) : null; }
-
-function clearInputFields(){
-  const allFieldIds = [
-    'q_1130_fp','q_16_fp','q_21_fp','q_06_fp',
-    'q_1130_prf','q_16_prf','q_21_prf','q_06_prf',
-    'q_1130_prs','q_16_prs','q_21_prs','q_06_prs',
-    'q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1',
-    'q_1130_el','q_16_el','q_21_el','q_06_el'
-  ];
-  allFieldIds.forEach(id=> el(id).value = 0);
-  collectGrid('fp','Fora do parâmetro');
-  collectGrid('prf','Preenchimento Remoto de formulário');
-  collectGrid('prs','Preenchimento remoto sem exame de local');
-  collectGrid('ad1','Agendar D+1');
-  collectGrid('el','Exame de local');
-}
-
-/* ==== Reset Dashboard ==== */
-function resetDashboard(){
-  if(!confirm('Tem certeza que deseja zerar o dashboard?\nIsso vai limpar os dados locais. Depois, importe um CSV atualizado do Google Sheets.')) return;
-  DATA = [];
-  localStorage.removeItem(LS_KEY);
-  recalcAll();
-  toast('🧹 Dashboard zerado. Importe um CSV atualizado do Google Sheets.');
-}
-
-/* ==== Enviar ==== */
-async function enviar(){
-  const auto = el('autoExpand').checked;
-  const iso=el('dtMonitor').value;
-
-  if(!iso){ 
-    toast('⚠️ Selecione a Data do monitoramento.','warn'); 
-    return; 
-  }
-
-  const dia = calcDiaFromDateInput();
-  const payloadBase = {"Data do monitoramento": iso.split('-').reverse().join('/'), dia, usuario:'dashboard', data_envio:new Date().toISOString()};
-
-  const cats=[ 
-    collectGrid('fp','Fora do parâmetro'),
-    collectGrid('prf','Preenchimento Remoto de formulário'),
-    collectGrid('prs','Preenchimento remoto sem exame de local'),
-    collectGrid('ad1','Agendar D+1'),
-    collectGrid('el','Exame de local') 
-  ];
-
-  const records=[];
-  for(const c of cats){
-    records.push({...payloadBase, categoria:normalizeCategory(c.label),
-      quant_11h30min:c.h1130, quant_16h:c.h16, quant_21h:c.h21, quant_06h:c.h06, somatorio:c.sum});
-  }
-
-  const totalSomatorios = records.reduce((a,b)=> a + (Number(b.somatorio)||0), 0);
-
-  // ENVIO PARA ENDPOINT FIXO
-  el('btnEnviar').disabled=true;
-  try{
-    const res = await fetch(ENDPOINT_FIXO,{method:'POST',headers:{'Content-Type':'application/json'}, body: JSON.stringify({registros:records})});
-    const text = await res.text();
-    if(!res.ok) throw new Error(`HTTP ${res.status} - ${text}`);
-    toast('✅ Enviado com sucesso! Atualizando dashboard...');
-  }catch(e){ 
-    toast('⚠️ Falha ao enviar: '+e.message+' (dados salvos localmente)','err'); 
-  }
-  finally{ el('btnEnviar').disabled=false; }
-
-  // ADICIONAR AO DATASET LOCAL
-  const timestampNow=new Date().toISOString();
-  let catsAtivadas=[];
-
-  for(const r of records){
-    if(r.somatorio>0){
-      const newRecord = {
-        "Data do monitoramento": r["Data do monitoramento"], 
-        Dia: dia, 
-        categoria:r.categoria,
-        valor:Number(r.somatorio||0), 
-        Timestamp:timestampNow, 
-        origem:'planilha-superior'
-      };
-      DATA.push(newRecord);
-      catsAtivadas.push(r.categoria);
-    }
-  }
-
-  // AUTO-EXPAND FILTROS
-  if(auto){
-    const min = el('minDate');
-    const max = el('maxDate');
-    const dIso = iso;
-    if(min.value && new Date(min.value) > new Date(dIso)) min.value = dIso;
-    if(!min.value) min.value = dIso;
-    if(max.value && new Date(max.value) < new Date(dIso)) max.value = dIso;
-    if(!max.value) max.value = dIso;
-    catsAtivadas.forEach(c=> ACTIVE_CATS.add(c));
-  }
-
-  if(totalSomatorios===0){
-    toast('⚠️ Todos os somatórios estão 0 — nada foi adicionado ao dataset.','warn');
-  }
-
-  recalcAll();
-  clearInputFields();
-}
-
-/* ==== Exportar CSV ==== */
-function exportarCSV(){
-  const rows = applyFilters();
-  if(!rows.length){ toast('⚠️ Sem dados para exportar.','warn'); return; }
-  const headers=['Data do monitoramento','Dia','categoria','valor','Timestamp','origem'];
-  const arr=[headers].concat(rows.map(r=> headers.map(h=> r[h] ?? '')));
-  const csv=toCSV(arr,';');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const ts=new Date();
-  const name=`dashboard_cbmerj_${ts.getFullYear()}-${String(ts.getMonth()+1).padStart(2,'0')}-${String(ts.getDate()).padStart(2,'0')}_${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}.csv`;
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
-  toast('✅ CSV exportado com sucesso!');
-}
-
-/* ==== Chips ==== */
-function buildChips(){
-  const cont=el('chipsCats'); cont.innerHTML='';
-  const cats=Array.from(new Set(DATA.map(r=>normalizeCategory(r.categoria))));
-  if(ACTIVE_CATS.size===0) ACTIVE_CATS=new Set(cats);
-  cats.forEach(c=>{
-    const span=document.createElement('span'); span.className='chip'+(ACTIVE_CATS.has(c)?' on':''); span.textContent=c;
-    span.onclick=()=>{ if(ACTIVE_CATS.has(c)) ACTIVE_CATS.delete(c); else ACTIVE_CATS.add(c); span.classList.toggle('on'); recalcAll(); };
-    cont.appendChild(span);
-  });
-}
-
-/* ==== Eventos ==== */
-['q_1130_fp','q_16_fp','q_21_fp','q_06_fp'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('fp','Fora do parâmetro')));
-['q_1130_prf','q_16_prf','q_21_prf','q_06_prf'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prf','Preenchimento Remoto de formulário')));
-['q_1130_prs','q_16_prs','q_21_prs','q_06_prs'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('prs','Preenchimento remoto sem exame de local')));
-['q_1130_ad1','q_16_ad1','q_21_ad1','q_06_ad1'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('ad1','Agendar D+1')));
-['q_1130_el','q_16_el','q_21_el','q_06_el'].forEach(id=> el(id).addEventListener('input',()=>collectGrid('el','Exame de local')));
-
-el('btnEnviar').addEventListener('click', enviar);
-el('btnImport').addEventListener('click', ()=> el('fileCSV').click());
-el('fileCSV').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) importCSVFile(f); e.target.value=''; });
-el('btnExportCsv').addEventListener('click', exportarCSV);
-el('btnReset').addEventListener('click', resetDashboard);
-el('minDate').addEventListener('change', recalcAll);
-el('maxDate').addEventListener('change', recalcAll);
-el('wordFilter').addEventListener('input', e=>{ WORD_FILTER=e.target.value||''; recalcAll(); });
-
-// Logo
-el('logoImg').addEventListener('click', ()=> el('fileLogo').click());
-el('fileLogo').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) handleLogoFile(f); e.target.value=''; });
-
-/* ==== Init ==== */
-(function init(){
-  loadLogo();
-  loadLS();
-
-  const today=new Date();
-  el('dtMonitor').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  const mind = new Date(today); mind.setDate(today.getDate()-30);
-  el('minDate').value = `${mind.getFullYear()}-${String(mind.getMonth()+1).padStart(2,'0')}-${String(mind.getDate()).padStart(2,'0')}`;
-  el('maxDate').value = el('dtMonitor').value;
-
-  collectGrid('fp','Fora do parâmetro'); 
-  collectGrid('prf','Preenchimento Remoto de formulário'); 
-  collectGrid('prs','Preenchimento remoto sem exame de local'); 
-  collectGrid('ad1','Agendar D+1'); 
-  collectGrid('el','Exame de local');
-
-  buildChips();
-  recalcAll();
-
-  // Carrega automaticamente os dados da planilha oficial
-  carregarDoSheets();
-
-  if(location.protocol==='file:'){ 
-    toast('⚠️ Você abriu via file://. Use Live Server ou http(s) para evitar CORS.','warn'); 
-  }
-})();
-</script>
+
+    <script>
+        let dadosOriginais = [];
+        let dadosFiltrados = [];
+        let categoriasAtivas = new Set();
+        let charts = {};
+
+        // Mapeamento de categorias para normalização
+        const CATEGORY_MAP = {
+            'fora do parametro': 'Fora do parâmetro',
+            'fora do parâmetro': 'Fora do parâmetro',
+            'agendar d+1': 'Agendar D+1',
+            'preenchimento remoto': 'Preenchimento Remoto de formulário',
+            'preenchimento remoto de formulário': 'Preenchimento Remoto de formulário',
+            'preenchimento remoto de formulario': 'Preenchimento Remoto de formulário',
+            'preenchimento remoto sem exame de local': 'Preenchimento remoto sem exame de local',
+            'exame de local': 'Exame de local'
+        };
+
+        function normalizeCategory(cat) {
+            if (!cat) return 'Outros';
+            const lower = cat.toLowerCase().trim();
+            return CATEGORY_MAP[lower] || cat;
+        }
+
+        // Verificar se está em file://
+        if (window.location.protocol === 'file:') {
+            document.getElementById('fileProtocolWarning').style.display = 'flex';
+        }
+
+        // Carregar dados do localStorage ao iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('dashboardData');
+            if (saved) {
+                try {
+                    dadosOriginais = JSON.parse(saved);
+                    aplicarFiltros();
+                } catch (e) {
+                    console.error('Erro ao carregar dados salvos:', e);
+                }
+            }
+            // Definir data de hoje por padrão
+            document.getElementById('dataMonitoramento').valueAsDate = new Date();
+            calcularDia();
+        });
+
+        function salvarDados() {
+            localStorage.setItem('dashboardData', JSON.stringify(dadosOriginais));
+        }
+
+        function detectDelimiter(text) {
+            const firstLine = text.split('\n')[0];
+            const semicolonCount = (firstLine.match(/;/g) || []).length;
+            const commaCount = (firstLine.match(/,/g) || []).length;
+            return semicolonCount > commaCount ? ';' : ',';
+        }
+
+        function parseCSV(text) {
+            const delimiter = detectDelimiter(text);
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^﻿/, ''));
+
+            const diaIndex = headers.findIndex(h => /dia/i.test(h));
+            const categoriaIndex = headers.findIndex(h => /categoria/i.test(h));
+            const valorIndex = headers.findIndex(h => /valor|quantidade|quant/i.test(h));
+            const timestampIndex = headers.findIndex(h => /timestamp|data/i.test(h));
+
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const values = lines[i].split(delimiter).map(v => v.trim());
+
+                let dia = diaIndex >= 0 ? parseInt(values[diaIndex]) : null;
+                let timestamp = timestampIndex >= 0 ? values[timestampIndex] : '';
+
+                // Se Dia não existe, tentar inferir do Timestamp
+                if (!dia && timestamp) {
+                    const match = timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    if (match) {
+                        dia = parseInt(match[1]);
+                    }
+                }
+
+                data.push({
+                    Dia: dia || 0,
+                    Categoria: normalizeCategory(categoriaIndex >= 0 ? values[categoriaIndex] : 'Outros'),
+                    Valor: valorIndex >= 0 ? parseFloat(values[valorIndex]) || 0 : 0,
+                    Timestamp: timestamp
+                });
+            }
+            return data;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const newData = parseCSV(text);
+
+                const mode = document.getElementById('importMode').value;
+                if (mode === 'replace') {
+                    dadosOriginais = newData;
+                } else {
+                    dadosOriginais = [...dadosOriginais, ...newData];
+                }
+
+                const removeDup = document.getElementById('removeDuplicates').value;
+                if (removeDup === 'yes') {
+                    dadosOriginais = removerDuplicatas(dadosOriginais);
+                }
+
+                salvarDados();
+                aplicarFiltros();
+            };
+            reader.readAsText(file);
+        }
+
+        function removerDuplicatas(data) {
+            const seen = new Set();
+            return data.filter(row => {
+                const key = `${row.Dia}-${row.Categoria}-${row.Valor}-${row.Timestamp}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+
+        function aplicarFiltros() {
+            const minDay = parseInt(document.getElementById('minDay').value) || -Infinity;
+            const maxDay = parseInt(document.getElementById('maxDay').value) || Infinity;
+
+            dadosFiltrados = dadosOriginais.filter(row => {
+                const diaOk = row.Dia >= minDay && row.Dia <= maxDay;
+                const catOk = categoriasAtivas.size === 0 || categoriasAtivas.has(row.Categoria);
+                return diaOk && catOk;
+            });
+
+            atualizarDashboard();
+        }
+
+        function atualizarDashboard() {
+            atualizarKPIs();
+            atualizarChips();
+            atualizarGraficos();
+            atualizarTabela();
+        }
+
+        function atualizarKPIs() {
+            const totalEventos = dadosFiltrados.reduce((sum, row) => sum + row.Valor, 0);
+            const totalDias = new Set(dadosFiltrados.map(r => r.Dia)).size;
+            const totalCategorias = new Set(dadosFiltrados.map(r => r.Categoria)).size;
+            const mediaPorDia = totalDias > 0 ? (totalEventos / totalDias).toFixed(1) : 0;
+
+            const foraParametro = dadosFiltrados
+                .filter(r => r.Categoria === 'Fora do parâmetro')
+                .reduce((sum, r) => sum + r.Valor, 0);
+
+            document.getElementById('kpis').innerHTML = `
+                <div class="kpi">
+                    <div class="kpi-label">Total de Eventos</div>
+                    <div class="kpi-value">${totalEventos}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Dias Monitorados</div>
+                    <div class="kpi-value">${totalDias}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Categorias</div>
+                    <div class="kpi-value">${totalCategorias}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Média por Dia</div>
+                    <div class="kpi-value">${mediaPorDia}</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Fora do Parâmetro</div>
+                    <div class="kpi-value">${foraParametro}</div>
+                </div>
+            `;
+        }
+
+        function atualizarChips() {
+            const categorias = [...new Set(dadosOriginais.map(r => r.Categoria))].sort();
+            const container = document.getElementById('categoryChips');
+            container.innerHTML = categorias.map(cat => 
+                `<div class="chip ${categoriasAtivas.has(cat) ? 'active' : ''}" onclick="toggleCategoria('${cat}')">${cat}</div>`
+            ).join('');
+        }
+
+        function toggleCategoria(cat) {
+            if (categoriasAtivas.has(cat)) {
+                categoriasAtivas.delete(cat);
+            } else {
+                categoriasAtivas.add(cat);
+            }
+            aplicarFiltros();
+        }
+
+        function atualizarGraficos() {
+            // Total por Dia com MM3
+            const porDia = {};
+            dadosFiltrados.forEach(row => {
+                porDia[row.Dia] = (porDia[row.Dia] || 0) + row.Valor;
+            });
+            const diasOrdenados = Object.keys(porDia).map(Number).sort((a, b) => a - b);
+            const valoresPorDia = diasOrdenados.map(d => porDia[d]);
+
+            // Calcular MM3
+            const mm3 = [];
+            for (let i = 0; i < valoresPorDia.length; i++) {
+                if (i < 1) {
+                    mm3.push(null);
+                } else if (i < 2) {
+                    mm3.push((valoresPorDia[i-1] + valoresPorDia[i]) / 2);
+                } else {
+                    mm3.push((valoresPorDia[i-2] + valoresPorDia[i-1] + valoresPorDia[i]) / 3);
+                }
+            }
+
+            if (charts.porDia) charts.porDia.destroy();
+            charts.porDia = new Chart(document.getElementById('chartPorDia'), {
+                type: 'line',
+                data: {
+                    labels: diasOrdenados,
+                    datasets: [
+                        {
+                            label: 'Total por Dia',
+                            data: valoresPorDia,
+                            borderColor: '#8B0000',
+                            backgroundColor: 'rgba(139, 0, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'MM3 (Média Móvel 3 pontos)',
+                            data: mm3,
+                            borderColor: '#f39c12',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } },
+                        title: { display: true, text: 'Total de Eventos por Dia', color: '#fff', font: { size: 16 } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+
+            // Total por Categoria (Doughnut)
+            const porCategoria = {};
+            dadosFiltrados.forEach(row => {
+                const cat = row.Categoria;
+                porCategoria[cat] = (porCategoria[cat] || 0) + row.Valor;
+            });
+            const categorias = Object.keys(porCategoria);
+            const valoresPorCategoria = categorias.map(c => porCategoria[c]);
+
+            const cores = ['#8B0000', '#A52A2A', '#CD5C5C', '#DC143C', '#F08080', '#FA8072', '#E9967A', '#FFA07A'];
+
+            if (charts.porCategoria) charts.porCategoria.destroy();
+            charts.porCategoria = new Chart(document.getElementById('chartPorCategoria'), {
+                type: 'doughnut',
+                data: {
+                    labels: categorias,
+                    datasets: [{
+                        data: valoresPorCategoria,
+                        backgroundColor: cores.slice(0, categorias.length),
+                        borderColor: '#1a1a2e',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            labels: { color: '#fff', font: { size: 11 } },
+                            position: 'right'
+                        },
+                        title: { display: true, text: 'Participação por Categoria', color: '#fff', font: { size: 16 } }
+                    }
+                }
+            });
+        }
+
+        function atualizarTabela() {
+            const tbody = document.querySelector('#dataTable tbody');
+            tbody.innerHTML = dadosFiltrados.map(row => `
+                <tr>
+                    <td>${row.Dia}</td>
+                    <td>${row.Categoria}</td>
+                    <td>${row.Valor}</td>
+                    <td>${row.Timestamp}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportarCSV() {
+            const csv = [
+                'Dia;Categoria;Valor;Timestamp',
+                ...dadosFiltrados.map(r => `${r.Dia};${r.Categoria};${r.Valor};${r.Timestamp}`)
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function zerarDashboard() {
+            if (confirm('Tem certeza que deseja limpar todos os dados locais?')) {
+                dadosOriginais = [];
+                dadosFiltrados = [];
+                categoriasAtivas.clear();
+                localStorage.removeItem('dashboardData');
+                atualizarDashboard();
+            }
+        }
+
+        // ========== PREENCHIMENTO DIÁRIO ==========
+        function calcularDia() {
+            const dataInput = document.getElementById('dataMonitoramento').value;
+            if (!dataInput) {
+                document.getElementById('diaInfo').textContent = 'O Dia é derivado desta data.';
+                return;
+            }
+
+            const [ano, mes, dia] = dataInput.split('-').map(Number);
+            document.getElementById('diaInfo').textContent = `O Dia é derivado desta data. (Dia ${dia})`;
+        }
+
+        function calcularSomatorio(input) {
+            const row = input.closest('tr');
+            const inputs = row.querySelectorAll('input[type="number"]');
+            let total = 0;
+            inputs.forEach(inp => {
+                total += parseFloat(inp.value) || 0;
+            });
+            const totalCell = row.querySelector('.total-col');
+            totalCell.textContent = total;
+        }
+
+        async function enviarDadosPlanilha() {
+            const dataInput = document.getElementById('dataMonitoramento').value;
+            if (!dataInput) {
+                alert('⚠️ Por favor, selecione a Data do monitoramento.');
+                return;
+            }
+
+            const [ano, mes, dia] = dataInput.split('-').map(Number);
+            const payload = {
+                'Data do monitoramento': dataInput,
+                'Dia': dia
+            };
+
+            const rows = document.querySelectorAll('#spreadsheetBody tr');
+            const agregado = {};
+
+            rows.forEach(row => {
+                const categoria = row.querySelector('td:first-child').textContent.trim();
+                const inputs = row.querySelectorAll('input[type="number"]');
+
+                inputs.forEach(input => {
+                    const time = input.dataset.time;
+                    const value = parseFloat(input.value) || 0;
+                    const key = `quant_${time}`;
+
+                    if (!payload[categoria]) {
+                        payload[categoria] = {};
+                    }
+                    payload[categoria][key] = value;
+                });
+
+                const totalCell = row.querySelector('.total-col');
+                const total = parseFloat(totalCell.textContent) || 0;
+                agregado[categoria] = total;
+            });
+
+            // Flatten payload
+            const flatPayload = {
+                'Data do monitoramento': payload['Data do monitoramento'],
+                'Dia': payload['Dia']
+            };
+
+            Object.keys(payload).forEach(key => {
+                if (key !== 'Data do monitoramento' && key !== 'Dia') {
+                    Object.keys(payload[key]).forEach(subKey => {
+                        flatPayload[`${key}_${subKey}`] = payload[key][subKey];
+                    });
+                }
+            });
+
+            const endpoint = document.getElementById('endpointSelector').value;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(flatPayload)
+                });
+
+                // Com no-cors, não conseguimos ler a resposta, mas se não houver erro de rede, assumimos sucesso
+                alert('✅ Dados enviados com sucesso!');
+
+                // Limpar formulário
+                document.querySelectorAll('#spreadsheetBody input[type="number"]').forEach(inp => inp.value = 0);
+                document.querySelectorAll('.total-col').forEach(cell => cell.textContent = 0);
+
+                // Injetar dados agregados no dataset local
+                Object.keys(agregado).forEach(categoria => {
+                    if (agregado[categoria] > 0) {
+                        dadosOriginais.push({
+                            Dia: dia,
+                            Categoria: normalizeCategory(categoria),
+                            Valor: agregado[categoria],
+                            Timestamp: dataInput
+                        });
+                    }
+                });
+
+                salvarDados();
+                aplicarFiltros();
+
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                alert(`❌ Erro ao enviar (status ${error.status || 0}): ${error.message}\n\n` +
+                      `Verifique:\n` +
+                      `1. Apps Script está publicado como "Web App"\n` +
+                      `2. Acesso configurado como "Qualquer pessoa"\n` +
+                      `3. URL está correta\n` +
+                      `4. Você está acessando via servidor local (não file://)`);
+            }
+        }
+
+        async function testarConexao() {
+            const endpoint = document.getElementById('endpointSelector').value;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    const text = await response.text();
+                    alert('✅ Conexão OK!\n\nResposta do servidor:\n' + text.substring(0, 200));
+                } else {
+                    alert(`⚠️ Servidor respondeu com status ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert(`❌ Erro ao conectar: ${error.message}\n\n` +
+                      `Verifique:\n` +
+                      `1. Apps Script publicado como "Web App"\n` +
+                      `2. Acesso: "Qualquer pessoa"\n` +
+                      `3. URL correta\n` +
+                      `4. Acessando via servidor local (não file://)`);
+            }
+        }
+    </script>
 </body>
 </html>
