@@ -389,6 +389,164 @@ header {
                 font-size: 1.5em;
             }
         }
+        /* ===== MELHORIAS PARA MOBILE ===== */
+
+/* Ajuste geral para telas pequenas */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    /* Cabeçalho empilhado */
+    .header-inner {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    h1 {
+        font-size: 1.3em;
+    }
+
+    .subtitle {
+        font-size: 0.95em;
+    }
+
+    .description {
+        font-size: 0.85em;
+    }
+
+    /* Logos menores no mobile */
+    .logo-cbmerj,
+    .logo-dppt {
+        max-height: 50px;
+        max-width: 80px;
+    }
+
+    /* Botões em coluna */
+    .controls {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        font-size: 0.95em;
+        padding: 10px 20px;
+    }
+
+    /* KPIs em 2 colunas no mobile */
+    .kpis {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .kpi-card {
+        padding: 15px;
+    }
+
+    .kpi-value {
+        font-size: 1.5em;
+    }
+
+    /* Filtros empilhados */
+    .filter-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-row label {
+        min-width: auto;
+    }
+
+    .filter-row input {
+        width: 100%;
+    }
+
+    /* Gráficos em 1 coluna */
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Planilha diária - tabela rolável horizontalmente */
+    .planilha-diaria {
+        padding: 15px;
+        overflow-x: auto;
+    }
+
+    .tabela-preenchimento {
+        font-size: 0.85em;
+        min-width: 600px; /* força scroll horizontal */
+    }
+
+    .tabela-preenchimento th,
+    .tabela-preenchimento td {
+        padding: 8px 4px;
+    }
+
+    .tabela-preenchimento input[type="number"] {
+        width: 60px;
+        padding: 6px;
+        font-size: 0.9em;
+    }
+
+    /* Botão enviar */
+    .btn-enviar {
+        padding: 12px 30px;
+        font-size: 1em;
+    }
+
+    /* Tabela detalhada rolável */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        font-size: 0.85em;
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    /* Chips de categoria menores */
+    .chip {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    /* Canvas dos gráficos */
+    canvas {
+        max-height: 300px !important;
+    }
+}
+
+/* Para telas muito pequenas (< 480px) */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.1em;
+    }
+
+    .subtitle {
+        font-size: 0.85em;
+    }
+
+    .kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-value {
+        font-size: 1.3em;
+    }
+
+    .tabela-preenchimento {
+        font-size: 0.75em;
+    }
+
+    .tabela-preenchimento input[type="number"] {
+        width: 50px;
+        padding: 4px;
+    }
+}
     </style>
 </head>
 <body>
