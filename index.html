@@ -6,7 +6,11 @@
     <title>Dashboard CSV • CBMERJ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -14,947 +18,1225 @@
             padding: 20px;
             min-height: 100vh;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+header {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(200,16,46,0.3);
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.header-text {
+    text-align: center;
+    flex: 1;
+}
+
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+}
+
+.logo-cbmerj,
+.logo-dppt {
+    max-height: 120px;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+@media (max-width: 768px) {
+    .header-inner {
+        flex-direction: column;
+    }
+    .logo-wrapper {
+        min-width: auto;
+    }
+}
         h1 {
-            color: #fff;
-            margin-bottom: 8px;
-            font-size: 2rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #C8102E;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .subtitle {
-            color: #b0b0b0;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
+            color: #FFD700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
         }
+        .description {
+            color: #b0b0b0;
+            font-size: 0.95em;
+        }
+        /* Planilha Diária */
+        .planilha-diaria {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #C8102E;
+            box-shadow: 0 4px 15px rgba(200,16,46,0.2);
+        }
+        .planilha-diaria h2 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .form-row label {
+            color: #FFD700;
+            font-weight: 600;
+            min-width: 180px;
+        }
+        .form-row input[type="date"] {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #C8102E;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1em;
+            flex: 1;
+        }
+        .tabela-preenchimento {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .tabela-preenchimento th {
+            background: #C8102E;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .tabela-preenchimento td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(200,16,46,0.3);
+        }
+        .tabela-preenchimento td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: #FFD700;
+            background: rgba(255,215,0,0.1);
+        }
+        .tabela-preenchimento input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #C8102E;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            text-align: center;
+            font-size: 1em;
+        }
+        .tabela-preenchimento .somatorio {
+            background: rgba(255,215,0,0.2);
+            font-weight: bold;
+            color: #FFD700;
+            font-size: 1.1em;
+        }
+        .btn-enviar {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #C8102E 0%, #8B0000 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(200,16,46,0.4);
+            width: 100%;
+        }
+        .btn-enviar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(200,16,46,0.6);
+        }
+        .btn-enviar:active {
+            transform: translateY(0);
+        }
+        /* Controles */
         .controls {
             display: flex;
-            gap: 12px;
+            gap: 15px;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-        button, .btn {
+        .btn {
             padding: 12px 24px;
             border: none;
             border-radius: 8px;
+            font-size: 1em;
             cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
             transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            background: linear-gradient(135deg, #C8102E 0%, #8B0000 100%);
             color: white;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52, 73, 94, 0.4); }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(200,16,46,0.5);
+        }
         .btn-secondary {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a2e;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,215,0,0.5);
+        }
+        .btn-refresh {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
             color: white;
         }
-        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4); }
-        .btn-danger {
-            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
-            color: white;
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76,175,80,0.5);
         }
-        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4); }
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-            color: white;
+        input[type="file"] {
+            display: none;
         }
-        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4); }
-        .btn-info {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-        .btn-info:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4); }
-        input[type="file"] { display: none; }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .card h2 {
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* KPIs */
         .kpis {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
-        .kpi {
-            background: linear-gradient(135deg, rgba(139, 0, 0, 0.3) 0%, rgba(165, 42, 42, 0.3) 100%);
+        .kpi-card {
+            background: rgba(255,255,255,0.08);
             padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #8B0000;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(200,16,46,0.3);
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(200,16,46,0.3);
+            border-color: #C8102E;
         }
         .kpi-label {
-            font-size: 0.85rem;
-            color: #b0b0b0;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #FFD700;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
         .kpi-value {
-            font-size: 2rem;
+            color: #fff;
+            font-size: 2em;
             font-weight: bold;
-            color: #fff;
         }
-        .charts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-        .chart-container {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 10px;
-            height: 400px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        th {
-            background: rgba(139, 0, 0, 0.3);
-            color: #fff;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-        tr:hover { background: rgba(255, 255, 255, 0.05); }
+        /* Filtros */
         .filters {
+            background: rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(200,16,46,0.3);
+        }
+        .filter-row {
             display: flex;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: center;
         }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        .filter-row label {
+            color: #FFD700;
+            font-weight: 600;
+            min-width: 100px;
         }
-        .filter-group label {
-            font-size: 0.85rem;
-            color: #b0b0b0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .filter-group input, .filter-group select {
+        .filter-row input {
             padding: 8px 12px;
             border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #C8102E;
+            background: rgba(255,255,255,0.1);
             color: #fff;
-            font-size: 0.9rem;
+            font-size: 0.95em;
         }
         .category-chips {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 10px;
         }
         .chip {
             padding: 8px 16px;
             border-radius: 20px;
-            background: rgba(139, 0, 0, 0.3);
-            border: 2px solid transparent;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #C8102E;
+            color: #fff;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
+            font-size: 0.9em;
         }
-        .chip:hover { border-color: #8B0000; }
+        .chip:hover {
+            background: rgba(200,16,46,0.2);
+        }
         .chip.active {
-            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
-            border-color: #A52A2A;
+            background: #C8102E;
+            color: #fff;
         }
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-        .alert-warning {
-            background: rgba(243, 156, 18, 0.2);
-            border-left: 4px solid #f39c12;
-            color: #f39c12;
-        }
-        .alert-success {
-            background: rgba(39, 174, 96, 0.2);
-            border-left: 4px solid #27ae60;
-            color: #27ae60;
-        }
-        .alert-error {
-            background: rgba(231, 76, 60, 0.2);
-            border-left: 4px solid #e74c3c;
-            color: #e74c3c;
-        }
-
-        /* Estilos para Preenchimento Diário */
-        .daily-form {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 12px;
+        /* Gráficos */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .chart-container {
+            background: rgba(255,255,255,0.08);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(200,16,46,0.3);
         }
-        .form-date {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .chart-title {
+            color: #FFD700;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: 600;
         }
-        .form-date label {
-            font-size: 0.9rem;
-            color: #b0b0b0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        canvas {
+            max-height: 400px;
         }
-        .form-date input {
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: #fff;
-            font-size: 1rem;
-            width: 200px;
+        /* Tabela */
+        .table-container {
+            background: rgba(255,255,255,0.08);
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid rgba(200,16,46,0.3);
         }
-        .day-info {
-            font-size: 0.9rem;
-            color: #b0b0b0;
-            margin-top: 5px;
-        }
-        .spreadsheet-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
         }
-        .spreadsheet-table th {
-            background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
+        th {
+            background: #C8102E;
             color: white;
             padding: 12px;
-            text-align: center;
+            text-align: left;
             font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
         }
-        .spreadsheet-table td {
-            padding: 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.2);
-        }
-        .spreadsheet-table td:first-child {
-            padding: 12px;
-            font-weight: 500;
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(200,16,46,0.2);
             color: #e0e0e0;
-            background: rgba(139, 0, 0, 0.2);
         }
-        .spreadsheet-table input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            color: #fff;
+        tr:hover {
+            background: rgba(200,16,46,0.1);
+        }
+        /* Status messages */
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
             text-align: center;
-            font-size: 1rem;
         }
-        .spreadsheet-table input[type="number"]:focus {
-            outline: 2px solid #8B0000;
-            background: rgba(139, 0, 0, 0.1);
+        .status-success {
+            background: rgba(76,175,80,0.2);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
         }
-        .spreadsheet-table .total-col {
-            background: rgba(139, 0, 0, 0.3);
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            padding: 12px;
-            font-size: 1.1rem;
+        .status-error {
+            background: rgba(244,67,54,0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
         }
-        .submit-row {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+        .status-info {
+            background: rgba(33,150,243,0.2);
+            border: 1px solid #2196F3;
+            color: #2196F3;
         }
-        .endpoint-selector {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .endpoint-selector label {
-            font-size: 0.9rem;
-            color: #b0b0b0;
-        }
-        .endpoint-selector select {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 0.9rem;
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Dashboard CSV • CBMERJ</h1>
-        <p class="subtitle">Monitoramento de eventos - Diretoria de Pesquisa, Perícia e Ensaios</p>
-
-        <div id="fileProtocolWarning" style="display: none;" class="alert alert-warning">
-            ⚠️ <strong>Atenção:</strong> Você está acessando o arquivo diretamente (file://). Para enviar dados ao Apps Script, abra via servidor local (Live Server, Python http.server, etc).
+<div class="container">
+ <header>
+    <div class="header-inner">
+        <!-- Logo CBMERJ à esquerda -->
+        <div class="logo-wrapper">
+            <img src="logo_cbmerj.png" alt="Logo CBMERJ" class="logo-cbmerj">
         </div>
 
-        <div class="controls">
-            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                📁 Importar CSV
-            </button>
-            <input type="file" id="fileInput" accept=".csv" onchange="handleFileUpload(event)">
-            <button class="btn btn-secondary" onclick="exportarCSV()">
-                💾 Exportar CSV
-            </button>
-            <button class="btn btn-danger" onclick="zerarDashboard()">
-                🗑️ Zerar dashboard (limpar dados locais)
-            </button>
-        </div>
-
-        <!-- PREENCHIMENTO DIÁRIO -->
-        <div class="card">
-            <h2>📋 Preenchimento Diário</h2>
-
-            <div class="endpoint-selector">
-                <label>Endpoint (Produção/Homolog):</label>
-                <select id="endpointSelector">
-                    <option value="https://script.google.com/macros/s/AKfycbziwpbIZIzZ0K6Wc2hoDVeousqGnBnqDK5koNKu2OMFkKVtwo2vxIVEgjNdFvHuPNU6tA/exec">Produção</option>
-                </select>
-                <button class="btn btn-info" onclick="testarConexao()">🔌 Testar Conexão com o Apps Script</button>
+        <!-- Título e textos centrais -->
+        <div class="header-text">
+            <h1>Painel · DPPT · CBMERJ</h1>
+            <div class="subtitle">
+                Monitoramento de eventos - Diretoria de Pesquisas, Perícias e Testes
             </div>
-
-            <div class="daily-form">
-                <div class="form-header">
-                    <div class="form-date">
-                        <label>Data do monitoramento</label>
-                        <input type="date" id="dataMonitoramento" onchange="calcularDia()">
-                        <div class="day-info" id="diaInfo">O Dia é derivado desta data.</div>
-                    </div>
-                </div>
-
-                <table class="spreadsheet-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 250px;"></th>
-                            <th>11H30MIN</th>
-                            <th>16H</th>
-                            <th>21H</th>
-                            <th>06H</th>
-                            <th style="background: #6B0000;">Somatório</th>
-                        </tr>
-                    </thead>
-                    <tbody id="spreadsheetBody">
-                        <tr>
-                            <td>Fora do parâmetro</td>
-                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="16h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="21h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Fora do parâmetro" data-time="06h" oninput="calcularSomatorio(this)"></td>
-                            <td class="total-col" data-category="Fora do parâmetro">0</td>
-                        </tr>
-                        <tr>
-                            <td>Preenchimento Remoto de formulário</td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="16h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="21h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento Remoto de formulário" data-time="06h" oninput="calcularSomatorio(this)"></td>
-                            <td class="total-col" data-category="Preenchimento Remoto de formulário">0</td>
-                        </tr>
-                        <tr>
-                            <td>Preenchimento remoto sem exame de local</td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="16h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="21h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Preenchimento remoto sem exame de local" data-time="06h" oninput="calcularSomatorio(this)"></td>
-                            <td class="total-col" data-category="Preenchimento remoto sem exame de local">0</td>
-                        </tr>
-                        <tr>
-                            <td>Agendar D+1</td>
-                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="11h30min" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="16h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="21h" oninput="calcularSomatorio(this)"></td>
-                            <td><input type="number" min="0" value="0" data-category="Agendar D+1" data-time="06h" oninput="calcularSomatorio(this)"></td>
-                            <td class="total-col" data-category="Agendar D+1">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="submit-row">
-                    <button class="btn btn-success" onclick="enviarDadosPlanilha()">✅ Clique para enviar</button>
-                </div>
+            <div class="description">
+                Atualização automática
             </div>
         </div>
 
-        <!-- FILTROS -->
-        <div class="card">
-            <h2>🔍 Filtros</h2>
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Modo de Importação</label>
-                    <select id="importMode">
-                        <option value="replace">Substituir dados</option>
-                        <option value="append">Adicionar aos dados existentes</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Remover Duplicatas</label>
-                    <select id="removeDuplicates">
-                        <option value="yes">Sim</option>
-                        <option value="no">Não</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Dia Mínimo</label>
-                    <input type="number" id="minDay" placeholder="Ex: 1" oninput="aplicarFiltros()">
-                </div>
-                <div class="filter-group">
-                    <label>Dia Máximo</label>
-                    <input type="number" id="maxDay" placeholder="Ex: 30" oninput="aplicarFiltros()">
-                </div>
-            </div>
-            <div class="category-chips" id="categoryChips"></div>
+        <!-- Logo DPPT à direita -->
+        <div class="logo-wrapper">
+            <img src="logo_dppt.png" alt="Logo DPPT" class="logo-dppt">
         </div>
+    </div>
+</header>
+    <div id="statusContainer"></div>
 
-        <!-- KPIs -->
-        <div class="kpis" id="kpis"></div>
-
-        <!-- GRÁFICOS -->
-        <div class="charts">
-            <div class="chart-container">
-                <canvas id="chartPorDia"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="chartPorCategoria"></canvas>
-            </div>
+    <!-- Planilha Diária -->
+    <section class="planilha-diaria">
+        <h2>📋 Preenchimento Diário</h2>
+        <div class="form-row">
+            <label for="dataMonitoramento">Data do monitoramento:</label>
+            <input type="date" id="dataMonitoramento" required>
         </div>
+        <table class="tabela-preenchimento">
+            <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>11H30MIN</th>
+                <th>16H</th>
+                <th>21H</th>
+                <th>06H</th>
+                <th>Somatório</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Fora do parâmetro</td>
+                <td><input type="number" min="0" value="0" data-categoria="Fora do parâmetro" data-horario="11h30min"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Fora do parâmetro" data-horario="16h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Fora do parâmetro" data-horario="21h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Fora do parâmetro" data-horario="06h"></td>
+                <td class="somatorio" data-categoria="Fora do parâmetro">0</td>
+            </tr>
+            <tr>
+                <td>Preenchimento Remoto de formulário</td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento Remoto de formulário" data-horario="11h30min"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento Remoto de formulário" data-horario="16h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento Remoto de formulário" data-horario="21h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento Remoto de formulário" data-horario="06h"></td>
+                <td class="somatorio" data-categoria="Preenchimento Remoto de formulário">0</td>
+            </tr>
+            <tr>
+                <td>Preenchimento remoto sem exame de local</td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="11h30min"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="16h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="21h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="06h"></td>
+                <td class="somatorio" data-categoria="Preenchimento remoto sem exame de local">0</td>
+            </tr>
+            <tr>
+                <td>Agendar D+1</td>
+                <td><input type="number" min="0" value="0" data-categoria="Agendar D+1" data-horario="11h30min"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Agendar D+1" data-horario="16h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Agendar D+1" data-horario="21h"></td>
+                <td><input type="number" min="0" value="0" data-categoria="Agendar D+1" data-horario="06h"></td>
+                <td class="somatorio" data-categoria="Agendar D+1">0</td>
+            </tr>
+            <tr>
+    <td>Exame de local</td>
+    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="11h30min"></td>
+    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="16h"></td>
+    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="21h"></td>
+    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="06h"></td>
+    <td class="somatorio" data-categoria="Exame de local">0</td>
+</tr>
+            </tbody>
+        </table>
+        <button class="btn-enviar" onclick="enviarDadosPlanilha()">✅ Clique para enviar</button>
+    </section>
 
-        <!-- TABELA -->
-        <div class="card">
-            <h2>📊 Dados Detalhados</h2>
-            <div style="overflow-x: auto;">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Dia</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+    <!-- Controles -->
+    <div class="controls">
+        <button class="btn btn-refresh" onclick="carregarDadosDaPlanilha()">🔄 Atualizar Dados</button>
+        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📁 Importar CSV</button>
+        <button class="btn btn-secondary" onclick="exportarCSV()">💾 Exportar CSV</button>
+        <input type="file" id="fileInput" accept=".csv" onchange="importarCSV(event)">
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+        <div class="kpi-card">
+            <div class="kpi-label">Total de Eventos</div>
+            <div class="kpi-value" id="kpiTotal">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Dias Monitorados</div>
+            <div class="kpi-value" id="kpiDias">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Categorias Ativas</div>
+            <div class="kpi-value" id="kpiCategorias">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Média Diária (Mês Atual)</div>
+            <div class="kpi-value" id="kpiMediaMes">0</div>
         </div>
     </div>
 
-    <script>
-        let dadosOriginais = [];
-        let dadosFiltrados = [];
-        let categoriasAtivas = new Set();
-        let charts = {};
+    <!-- Filtros -->
+    <div class="filters">
+        <div class="filter-row">
+            <label>Dia Mínimo:</label>
+            <input type="number" id="minDay" placeholder="Ex: 1" onchange="aplicarFiltros()">
+            <label>Dia Máximo:</label>
+            <input type="number" id="maxDay" placeholder="Ex: 31" onchange="aplicarFiltros()">
+        </div>
+        <div class="filter-row">
+            <label>Categorias:</label>
+            <div class="category-chips" id="categoryChips"></div>
+        </div>
+    </div>
 
-        // Mapeamento de categorias para normalização
-        const CATEGORY_MAP = {
-            'fora do parametro': 'Fora do parâmetro',
-            'fora do parâmetro': 'Fora do parâmetro',
-            'agendar d+1': 'Agendar D+1',
-            'preenchimento remoto': 'Preenchimento Remoto de formulário',
-            'preenchimento remoto de formulário': 'Preenchimento Remoto de formulário',
-            'preenchimento remoto de formulario': 'Preenchimento Remoto de formulário',
-            'preenchimento remoto sem exame de local': 'Preenchimento remoto sem exame de local',
-            'exame de local': 'Exame de local'
+    <!-- Gráficos -->
+    <div class="charts-grid">
+        <div class="chart-container">
+            <div class="chart-title">📈 Total por Dia (com MM3)</div>
+            <canvas id="chartDia"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">🥧 Participação por Categoria</div>
+            <canvas id="chartCategoria"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">📅 Total por Mês (últimos 6 meses)</div>
+            <canvas id="chartMes"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">📊 Categorias por Mês</div>
+            <canvas id="chartCategoriasMes"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">🕒 Distribuição por Turno</div>
+            <canvas id="chartTurno"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">📈 Tendência Semanal</div>
+            <canvas id="chartSemanal"></canvas>
+        </div>
+    </div>
+
+    <!-- Top 5 Dias -->
+    <div class="chart-container" style="margin-bottom: 30px;">
+        <div class="chart-title">🏆 Top 5 Dias com Mais Eventos</div>
+        <table id="tableTop5">
+            <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Data</th>
+                <th>Total de Eventos</th>
+                <th>Categoria Dominante</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Tabela Detalhada -->
+    <div class="table-container">
+        <div class="chart-title">📋 Dados Detalhados</div>
+        <table id="dataTable">
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Dia</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th>Turno / Timestamp</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // URL fixa do Apps Script
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOM9aH5L_4WZFgSAzvqM7PYV7D2IZEvEor5Tuot7Vrv4KH6VuIaRwRimHCq1tuykiSDg/exec";
+
+    // Mapa de categorias (normalização)
+    const CATEGORY_MAP = {
+        'fora do parametro': 'Fora do parâmetro',
+        'fora do parâmetro': 'Fora do parâmetro',
+        'preenchimento remoto': 'Preenchimento Remoto de formulário',
+        'preenchimento remoto de formulario': 'Preenchimento Remoto de formulário',
+        'preenchimento remoto de formulário': 'Preenchimento Remoto de formulário',
+        'preenchimento remoto sem exame de local': 'Preenchimento remoto sem exame de local',
+        'exame de local': 'Exame de local',           // ← Adicione esta linha
+        'exame local': 'Exame de local',
+        'agendar d+1': 'Agendar D+1',
+        'agendar d1': 'Agendar D+1'
+    };
+
+    function normalizeCategory(cat) {
+        if (!cat) return '';
+        const lower = cat.toLowerCase().trim();
+        return CATEGORY_MAP[lower] || cat;
+    }
+
+    // Paleta de cores para gráficos empilhados
+    const COLOR_PALETTE = ['#C8102E', '#FFD700', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800'];
+
+    // Helpers de data
+    function parseDataBrasileira(str) {
+        if (!str) return null;
+        str = String(str).trim();
+
+        // ISO: yyyy-mm-dd
+        const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (iso) {
+            const y = parseInt(iso[1], 10);
+            const m = parseInt(iso[2], 10) - 1;
+            const d = parseInt(iso[3], 10);
+            return new Date(y, m, d);
+        }
+
+        // BR: dd/mm/yyyy ou dd-mm-yyyy
+        const br = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        if (br) {
+            let d = parseInt(br[1], 10);
+            let m = parseInt(br[2], 10) - 1;
+            let y = parseInt(br[3], 10);
+            if (y < 100) y += 2000;
+            return new Date(y, m, d);
+        }
+        return null;
+    }
+
+    function formatarDataBR(date) {
+        if (!(date instanceof Date) || isNaN(date)) return '';
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    function getSemanaISO(date) {
+        if (!(date instanceof Date) || isNaN(date)) return null;
+        const dt = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = dt.getUTCDay() || 7;
+        dt.setUTCDate(dt.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
+        return { ano: dt.getUTCFullYear(), semana: weekNo };
+    }
+
+    // Estado global
+    let dadosOriginais = [];  // cada item: {Data, Dia, Categoria, Valor, Timestamp}
+    let dadosFiltrados = [];
+    let charts = {};
+    let categoriasAtivas = new Set();
+
+    // Atualizar somatórios da planilha diária
+    document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(input => {
+        input.addEventListener('input', atualizarSomatorios);
+    });
+
+    function atualizarSomatorios() {
+        const categorias = [
+            'Fora do parâmetro',
+            'Preenchimento Remoto de formulário',
+            'Preenchimento remoto sem exame de local',
+            'Agendar D+1'
+        ];
+        categorias.forEach(cat => {
+            const inputs = document.querySelectorAll(`input[data-categoria="${cat}"]`);
+            let soma = 0;
+            inputs.forEach(inp => soma += parseInt(inp.value) || 0);
+            const el = document.querySelector(`.somatorio[data-categoria="${cat}"]`);
+            if (el) el.textContent = soma;
+        });
+    }
+
+    // Enviar dados do formulário diário para Apps Script
+    async function enviarDadosPlanilha() {
+        const dataMonitoramento = document.getElementById('dataMonitoramento').value;
+        if (!dataMonitoramento) {
+            mostrarStatus('Por favor, selecione a data do monitoramento.', 'error');
+            return;
+        }
+        const dataObj = parseDataBrasileira(dataMonitoramento) || new Date(dataMonitoramento);
+        const dia = dataObj.getDate();
+
+        const payload = {
+            'Data do monitoramento': dataMonitoramento,
+            'Dia': dia
         };
 
-        function normalizeCategory(cat) {
-            if (!cat) return 'Outros';
-            const lower = cat.toLowerCase().trim();
-            return CATEGORY_MAP[lower] || cat;
-        }
+        const categorias = [
+            'Fora do parâmetro',
+            'Preenchimento Remoto de formulário',
+            'Preenchimento remoto sem exame de local',
+            'Agendar D+1'
+        ];
+        const horarios = ['11h30min', '16h', '21h', '06h'];
 
-        // Verificar se está em file://
-        if (window.location.protocol === 'file:') {
-            document.getElementById('fileProtocolWarning').style.display = 'flex';
-        }
-
-        // Carregar dados do localStorage ao iniciar
-        window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('dashboardData');
-            if (saved) {
-                try {
-                    dadosOriginais = JSON.parse(saved);
-                    aplicarFiltros();
-                } catch (e) {
-                    console.error('Erro ao carregar dados salvos:', e);
-                }
-            }
-            // Definir data de hoje por padrão
-            document.getElementById('dataMonitoramento').valueAsDate = new Date();
-            calcularDia();
+        categorias.forEach(cat => {
+            horarios.forEach(hor => {
+                const input = document.querySelector(`input[data-categoria="${cat}"][data-horario="${hor}"]`);
+                const valor = parseInt(input.value) || 0;
+                payload[`${cat}_quant_${hor}`] = valor;
+            });
         });
 
-        function salvarDados() {
-            localStorage.setItem('dashboardData', JSON.stringify(dadosOriginais));
-        }
-
-        function detectDelimiter(text) {
-            const firstLine = text.split('\n')[0];
-            const semicolonCount = (firstLine.match(/;/g) || []).length;
-            const commaCount = (firstLine.match(/,/g) || []).length;
-            return semicolonCount > commaCount ? ';' : ',';
-        }
-
-        function parseCSV(text) {
-            const delimiter = detectDelimiter(text);
-            const lines = text.trim().split('\n');
-            const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^﻿/, ''));
-
-            const diaIndex = headers.findIndex(h => /dia/i.test(h));
-            const categoriaIndex = headers.findIndex(h => /categoria/i.test(h));
-            const valorIndex = headers.findIndex(h => /valor|quantidade|quant/i.test(h));
-            const timestampIndex = headers.findIndex(h => /timestamp|data/i.test(h));
-
-            const data = [];
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const values = lines[i].split(delimiter).map(v => v.trim());
-
-                let dia = diaIndex >= 0 ? parseInt(values[diaIndex]) : null;
-                let timestamp = timestampIndex >= 0 ? values[timestampIndex] : '';
-
-                // Se Dia não existe, tentar inferir do Timestamp
-                if (!dia && timestamp) {
-                    const match = timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                    if (match) {
-                        dia = parseInt(match[1]);
-                    }
-                }
-
-                data.push({
-                    Dia: dia || 0,
-                    Categoria: normalizeCategory(categoriaIndex >= 0 ? values[categoriaIndex] : 'Outros'),
-                    Valor: valorIndex >= 0 ? parseFloat(values[valorIndex]) || 0 : 0,
-                    Timestamp: timestamp
-                });
-            }
-            return data;
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target.result;
-                const newData = parseCSV(text);
-
-                const mode = document.getElementById('importMode').value;
-                if (mode === 'replace') {
-                    dadosOriginais = newData;
-                } else {
-                    dadosOriginais = [...dadosOriginais, ...newData];
-                }
-
-                const removeDup = document.getElementById('removeDuplicates').value;
-                if (removeDup === 'yes') {
-                    dadosOriginais = removerDuplicatas(dadosOriginais);
-                }
-
-                salvarDados();
-                aplicarFiltros();
-            };
-            reader.readAsText(file);
-        }
-
-        function removerDuplicatas(data) {
-            const seen = new Set();
-            return data.filter(row => {
-                const key = `${row.Dia}-${row.Categoria}-${row.Valor}-${row.Timestamp}`;
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            });
-        }
-
-        function aplicarFiltros() {
-            const minDay = parseInt(document.getElementById('minDay').value) || -Infinity;
-            const maxDay = parseInt(document.getElementById('maxDay').value) || Infinity;
-
-            dadosFiltrados = dadosOriginais.filter(row => {
-                const diaOk = row.Dia >= minDay && row.Dia <= maxDay;
-                const catOk = categoriasAtivas.size === 0 || categoriasAtivas.has(row.Categoria);
-                return diaOk && catOk;
+        try {
+            mostrarStatus('Enviando dados...', 'info');
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
-            atualizarDashboard();
-        }
-
-        function atualizarDashboard() {
-            atualizarKPIs();
-            atualizarChips();
-            atualizarGraficos();
-            atualizarTabela();
-        }
-
-        function atualizarKPIs() {
-            const totalEventos = dadosFiltrados.reduce((sum, row) => sum + row.Valor, 0);
-            const totalDias = new Set(dadosFiltrados.map(r => r.Dia)).size;
-            const totalCategorias = new Set(dadosFiltrados.map(r => r.Categoria)).size;
-            const mediaPorDia = totalDias > 0 ? (totalEventos / totalDias).toFixed(1) : 0;
-
-            const foraParametro = dadosFiltrados
-                .filter(r => r.Categoria === 'Fora do parâmetro')
-                .reduce((sum, r) => sum + r.Valor, 0);
-
-            document.getElementById('kpis').innerHTML = `
-                <div class="kpi">
-                    <div class="kpi-label">Total de Eventos</div>
-                    <div class="kpi-value">${totalEventos}</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Dias Monitorados</div>
-                    <div class="kpi-value">${totalDias}</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Categorias</div>
-                    <div class="kpi-value">${totalCategorias}</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Média por Dia</div>
-                    <div class="kpi-value">${mediaPorDia}</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Fora do Parâmetro</div>
-                    <div class="kpi-value">${foraParametro}</div>
-                </div>
-            `;
-        }
-
-        function atualizarChips() {
-            const categorias = [...new Set(dadosOriginais.map(r => r.Categoria))].sort();
-            const container = document.getElementById('categoryChips');
-            container.innerHTML = categorias.map(cat => 
-                `<div class="chip ${categoriasAtivas.has(cat) ? 'active' : ''}" onclick="toggleCategoria('${cat}')">${cat}</div>`
-            ).join('');
-        }
-
-        function toggleCategoria(cat) {
-            if (categoriasAtivas.has(cat)) {
-                categoriasAtivas.delete(cat);
-            } else {
-                categoriasAtivas.add(cat);
-            }
-            aplicarFiltros();
-        }
-
-        function atualizarGraficos() {
-            // Total por Dia com MM3
-            const porDia = {};
-            dadosFiltrados.forEach(row => {
-                porDia[row.Dia] = (porDia[row.Dia] || 0) + row.Valor;
-            });
-            const diasOrdenados = Object.keys(porDia).map(Number).sort((a, b) => a - b);
-            const valoresPorDia = diasOrdenados.map(d => porDia[d]);
-
-            // Calcular MM3
-            const mm3 = [];
-            for (let i = 0; i < valoresPorDia.length; i++) {
-                if (i < 1) {
-                    mm3.push(null);
-                } else if (i < 2) {
-                    mm3.push((valoresPorDia[i-1] + valoresPorDia[i]) / 2);
-                } else {
-                    mm3.push((valoresPorDia[i-2] + valoresPorDia[i-1] + valoresPorDia[i]) / 3);
-                }
-            }
-
-            if (charts.porDia) charts.porDia.destroy();
-            charts.porDia = new Chart(document.getElementById('chartPorDia'), {
-                type: 'line',
-                data: {
-                    labels: diasOrdenados,
-                    datasets: [
-                        {
-                            label: 'Total por Dia',
-                            data: valoresPorDia,
-                            borderColor: '#8B0000',
-                            backgroundColor: 'rgba(139, 0, 0, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'MM3 (Média Móvel 3 pontos)',
-                            data: mm3,
-                            borderColor: '#f39c12',
-                            backgroundColor: 'transparent',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            tension: 0.4,
-                            pointRadius: 3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#fff' } },
-                        title: { display: true, text: 'Total de Eventos por Dia', color: '#fff', font: { size: 16 } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                        y: { ticks: { color: '#b0b0b0' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                    }
-                }
-            });
-
-            // Total por Categoria (Doughnut)
-            const porCategoria = {};
-            dadosFiltrados.forEach(row => {
-                const cat = row.Categoria;
-                porCategoria[cat] = (porCategoria[cat] || 0) + row.Valor;
-            });
-            const categorias = Object.keys(porCategoria);
-            const valoresPorCategoria = categorias.map(c => porCategoria[c]);
-
-            const cores = ['#8B0000', '#A52A2A', '#CD5C5C', '#DC143C', '#F08080', '#FA8072', '#E9967A', '#FFA07A'];
-
-            if (charts.porCategoria) charts.porCategoria.destroy();
-            charts.porCategoria = new Chart(document.getElementById('chartPorCategoria'), {
-                type: 'doughnut',
-                data: {
-                    labels: categorias,
-                    datasets: [{
-                        data: valoresPorCategoria,
-                        backgroundColor: cores.slice(0, categorias.length),
-                        borderColor: '#1a1a2e',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            labels: { color: '#fff', font: { size: 11 } },
-                            position: 'right'
-                        },
-                        title: { display: true, text: 'Participação por Categoria', color: '#fff', font: { size: 16 } }
-                    }
-                }
-            });
-        }
-
-        function atualizarTabela() {
-            const tbody = document.querySelector('#dataTable tbody');
-            tbody.innerHTML = dadosFiltrados.map(row => `
-                <tr>
-                    <td>${row.Dia}</td>
-                    <td>${row.Categoria}</td>
-                    <td>${row.Valor}</td>
-                    <td>${row.Timestamp}</td>
-                </tr>
-            `).join('');
-        }
-
-        function exportarCSV() {
-            const csv = [
-                'Dia;Categoria;Valor;Timestamp',
-                ...dadosFiltrados.map(r => `${r.Dia};${r.Categoria};${r.Valor};${r.Timestamp}`)
-            ].join('\n');
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-        }
-
-        function zerarDashboard() {
-            if (confirm('Tem certeza que deseja limpar todos os dados locais?')) {
-                dadosOriginais = [];
-                dadosFiltrados = [];
-                categoriasAtivas.clear();
-                localStorage.removeItem('dashboardData');
-                atualizarDashboard();
-            }
-        }
-
-        // ========== PREENCHIMENTO DIÁRIO ==========
-        function calcularDia() {
-            const dataInput = document.getElementById('dataMonitoramento').value;
-            if (!dataInput) {
-                document.getElementById('diaInfo').textContent = 'O Dia é derivado desta data.';
-                return;
-            }
-
-            const [ano, mes, dia] = dataInput.split('-').map(Number);
-            document.getElementById('diaInfo').textContent = `O Dia é derivado desta data. (Dia ${dia})`;
-        }
-
-        function calcularSomatorio(input) {
-            const row = input.closest('tr');
-            const inputs = row.querySelectorAll('input[type="number"]');
-            let total = 0;
-            inputs.forEach(inp => {
-                total += parseFloat(inp.value) || 0;
-            });
-            const totalCell = row.querySelector('.total-col');
-            totalCell.textContent = total;
-        }
-
-        async function enviarDadosPlanilha() {
-            const dataInput = document.getElementById('dataMonitoramento').value;
-            if (!dataInput) {
-                alert('⚠️ Por favor, selecione a Data do monitoramento.');
-                return;
-            }
-
-            const [ano, mes, dia] = dataInput.split('-').map(Number);
-            const payload = {
-                'Data do monitoramento': dataInput,
-                'Dia': dia
-            };
-
-            const rows = document.querySelectorAll('#spreadsheetBody tr');
-            const agregado = {};
-
-            rows.forEach(row => {
-                const categoria = row.querySelector('td:first-child').textContent.trim();
-                const inputs = row.querySelectorAll('input[type="number"]');
-
-                inputs.forEach(input => {
-                    const time = input.dataset.time;
-                    const value = parseFloat(input.value) || 0;
-                    const key = `quant_${time}`;
-
-                    if (!payload[categoria]) {
-                        payload[categoria] = {};
-                    }
-                    payload[categoria][key] = value;
-                });
-
-                const totalCell = row.querySelector('.total-col');
-                const total = parseFloat(totalCell.textContent) || 0;
-                agregado[categoria] = total;
-            });
-
-            // Flatten payload
-            const flatPayload = {
-                'Data do monitoramento': payload['Data do monitoramento'],
-                'Dia': payload['Dia']
-            };
-
-            Object.keys(payload).forEach(key => {
-                if (key !== 'Data do monitoramento' && key !== 'Dia') {
-                    Object.keys(payload[key]).forEach(subKey => {
-                        flatPayload[`${key}_${subKey}`] = payload[key][subKey];
-                    });
-                }
-            });
-
-            const endpoint = document.getElementById('endpointSelector').value;
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(flatPayload)
-                });
-
-                // Com no-cors, não conseguimos ler a resposta, mas se não houver erro de rede, assumimos sucesso
-                alert('✅ Dados enviados com sucesso!');
-
-                // Limpar formulário
-                document.querySelectorAll('#spreadsheetBody input[type="number"]').forEach(inp => inp.value = 0);
-                document.querySelectorAll('.total-col').forEach(cell => cell.textContent = 0);
-
-                // Injetar dados agregados no dataset local
-                Object.keys(agregado).forEach(categoria => {
-                    if (agregado[categoria] > 0) {
+            // Injetar no dataset local para refletir imediatamente
+            categorias.forEach(cat => {
+                horarios.forEach(hor => {
+                    const valor = payload[`${cat}_quant_${hor}`];
+                    if (valor > 0) {
                         dadosOriginais.push({
+                            Data: dataObj,
                             Dia: dia,
-                            Categoria: normalizeCategory(categoria),
-                            Valor: agregado[categoria],
-                            Timestamp: dataInput
+                            Categoria: normalizeCategory(cat),
+                            Valor: valor,
+                            Timestamp: hor
                         });
                     }
                 });
+            });
 
-                salvarDados();
-                aplicarFiltros();
+            // Limpar formulário
+            document.querySelectorAll('.tabela-preenchimento input[type="number"]').forEach(inp => inp.value = 0);
+            atualizarSomatorios();
 
-            } catch (error) {
-                console.error('Erro detalhado:', error);
-                alert(`❌ Erro ao enviar (status ${error.status || 0}): ${error.message}\n\n` +
-                      `Verifique:\n` +
-                      `1. Apps Script está publicado como "Web App"\n` +
-                      `2. Acesso configurado como "Qualquer pessoa"\n` +
-                      `3. URL está correta\n` +
-                      `4. Você está acessando via servidor local (não file://)`);
-            }
+            mostrarStatus('✅ Dados enviados com sucesso!', 'success');
+            aplicarFiltros();
+        } catch (error) {
+            mostrarStatus('❌ Erro ao enviar: ' + error.message, 'error');
         }
+    }
 
-        async function testarConexao() {
-            const endpoint = document.getElementById('endpointSelector').value;
+    // Carregar todos os dados da planilha (doGet)
+    async function carregarDadosDaPlanilha() {
+        try {
+            mostrarStatus('Carregando dados da planilha...', 'info');
+            const response = await fetch(APPS_SCRIPT_URL);
+            const dados = await response.json();
 
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
+            dadosOriginais = [];
+            dados.forEach(row => {
+                const valor = parseInt(row['valor']) || 0;
+                if (!valor) return;
 
-                if (response.ok) {
-                    const text = await response.text();
-                    alert('✅ Conexão OK!\n\nResposta do servidor:\n' + text.substring(0, 200));
-                } else {
-                    alert(`⚠️ Servidor respondeu com status ${response.status}`);
+                const dataStr = row['data do monitoramento'] || row['Data do monitoramento'] ||
+                    row['data_monitoramento'] || row['data'] || row['Data'] || '';
+                const dataObj = parseDataBrasileira(dataStr);
+
+                let dia = parseInt(row['dia']) || 0;
+                if ((!dia || isNaN(dia)) && dataObj) {
+                    dia = dataObj.getDate();
                 }
-            } catch (error) {
-                console.error('Erro de conexão:', error);
-                alert(`❌ Erro ao conectar: ${error.message}\n\n` +
-                      `Verifique:\n` +
-                      `1. Apps Script publicado como "Web App"\n` +
-                      `2. Acesso: "Qualquer pessoa"\n` +
-                      `3. URL correta\n` +
-                      `4. Acessando via servidor local (não file://)`);
-            }
+
+                dadosOriginais.push({
+                    Data: dataObj,
+                    Dia: dia,
+                    Categoria: normalizeCategory(row['categoria']),
+                    Valor: valor,
+                    Timestamp: row['timestamp'] || ''
+                });
+            });
+
+            mostrarStatus(`✅ ${dadosOriginais.length} registros carregados da planilha`, 'success');
+            aplicarFiltros();
+        } catch (error) {
+            mostrarStatus('❌ Erro ao carregar dados: ' + error.message, 'error');
         }
-    </script>
+    }
+
+    // Importar CSV local
+    function importarCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const linhas = text.split('\n').filter(l => l.trim());
+            if (linhas.length < 2) return;
+
+            let delimiter = ';';
+            if (linhas[0].includes(',') && !linhas[0].includes(';')) delimiter = ',';
+
+            const headers = linhas[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ''));
+            dadosOriginais = [];
+
+            for (let i = 1; i < linhas.length; i++) {
+                const valores = linhas[i].split(delimiter).map(v => v.trim().replace(/^["']|["']$/g, ''));
+                if (!valores.length) continue;
+                const obj = {};
+                headers.forEach((h, idx) => { obj[h] = valores[idx] || ''; });
+
+                const diaCol = headers.find(h => h.toLowerCase().includes('dia'));
+                const catCol = headers.find(h => h.toLowerCase().includes('categ'));
+                const valCol = headers.find(h => h.toLowerCase().includes('val'));
+                const timeCol = headers.find(h => h.toLowerCase().includes('time') || h.toLowerCase().includes('hora'));
+                const dataCol = headers.find(h => h.toLowerCase().includes('data'));
+
+                if (!catCol || !valCol) continue;
+
+                const dataStr = dataCol ? obj[dataCol] : (timeCol ? obj[timeCol] : '');
+                const dataObj = parseDataBrasileira(dataStr);
+
+                let dia = diaCol ? parseInt(obj[diaCol]) || 0 : 0;
+                if ((!dia || isNaN(dia)) && dataObj) {
+                    dia = dataObj.getDate();
+                }
+
+                dadosOriginais.push({
+                    Data: dataObj,
+                    Dia: dia,
+                    Categoria: normalizeCategory(obj[catCol]),
+                    Valor: parseInt(obj[valCol]) || 0,
+                    Timestamp: obj[timeCol] || ''
+                });
+            }
+
+            mostrarStatus(`✅ ${dadosOriginais.length} registros importados do CSV`, 'success');
+            aplicarFiltros();
+        };
+        reader.readAsText(file);
+    }
+
+    // Exportar CSV (dados filtrados)
+    function exportarCSV() {
+        if (dadosFiltrados.length === 0) {
+            mostrarStatus('Nenhum dado para exportar', 'error');
+            return;
+        }
+        let csv = 'Data;Dia;Categoria;Valor;Timestamp\n';
+        dadosFiltrados.forEach(row => {
+            const dataStr = row.Data ? formatarDataBR(row.Data) : '';
+            csv += `${dataStr};${row.Dia};${row.Categoria};${row.Valor};${row.Timestamp}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `dashboard_export_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        mostrarStatus('✅ CSV exportado com sucesso', 'success');
+    }
+
+    // Aplicar filtros básicos (dia mínimo/máximo + categorias ativas)
+    function aplicarFiltros() {
+        const minDay = parseInt(document.getElementById('minDay').value) || 0;
+        const maxDay = parseInt(document.getElementById('maxDay').value) || 999;
+
+        dadosFiltrados = dadosOriginais.filter(row => {
+            const diaOk = row.Dia >= minDay && row.Dia <= maxDay;
+            const catOk = categoriasAtivas.size === 0 || categoriasAtivas.has(row.Categoria);
+            return diaOk && catOk;
+        });
+
+        criarChipsCategoria();
+        atualizarKPIs();
+        atualizarGraficos();
+        atualizarTabela();
+        atualizarTop5();
+    }
+
+    // Atualizar KPIs
+    function atualizarKPIs() {
+        const total = dadosFiltrados.reduce((sum, row) => sum + row.Valor, 0);
+        const diasSet = new Set(dadosFiltrados.map(r => r.Data ? r.Data.toDateString() : `D${r.Dia}`));
+        const dias = diasSet.size;
+        const categorias = new Set(dadosFiltrados.map(r => r.Categoria)).size;
+
+        // Média diária do mês atual
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth();
+        const anoAtual = hoje.getFullYear();
+        const dadosMesAtual = dadosOriginais.filter(row => row.Data &&
+            row.Data.getMonth() === mesAtual &&
+            row.Data.getFullYear() === anoAtual);
+        const diasMesSet = new Set(dadosMesAtual.map(r => r.Data.toDateString()));
+        const diasComDados = diasMesSet.size;
+        const totalMesAtual = dadosMesAtual.reduce((sum, row) => sum + row.Valor, 0);
+        const mediaMes = diasComDados > 0 ? Math.round(totalMesAtual / diasComDados) : 0;
+
+        document.getElementById('kpiTotal').textContent = total;
+        document.getElementById('kpiDias').textContent = dias;
+        document.getElementById('kpiCategorias').textContent = categorias;
+        document.getElementById('kpiMediaMes').textContent = mediaMes;
+    }
+
+    // Atualizar todos os gráficos
+    function atualizarGraficos() {
+        atualizarGraficoDia();
+        atualizarGraficoCategoria();
+        atualizarGraficoMes();
+        atualizarGraficoCategoriasMes();
+        atualizarGraficoTurno();
+        atualizarGraficoSemanal();
+    }
+
+    function atualizarGraficoDia() {
+        const agrupado = {};
+        dadosFiltrados.forEach(row => {
+            const chave = row.Data ? formatarDataBR(row.Data) : `Dia ${row.Dia}`;
+            agrupado[chave] = (agrupado[chave] || 0) + row.Valor;
+        });
+        const labels = Object.keys(agrupado).sort((a, b) => a.localeCompare(b));
+        const valores = labels.map(l => agrupado[l]);
+
+        // MM3
+        const mm3 = [];
+        for (let i = 0; i < valores.length; i++) {
+            if (i < 1) mm3.push(null);
+            else if (i < 2) mm3.push((valores[i - 1] + valores[i]) / 2);
+            else mm3.push((valores[i - 2] + valores[i - 1] + valores[i]) / 3);
+        }
+
+        if (charts.dia) charts.dia.destroy();
+        const ctx = document.getElementById('chartDia').getContext('2d');
+        charts.dia = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Total por Dia',
+                        data: valores,
+                        borderColor: '#C8102E',
+                        backgroundColor: 'rgba(200,16,46,0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'MM3',
+                        data: mm3,
+                        borderColor: '#FFD700',
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
+    }
+
+    function atualizarGraficoCategoria() {
+        const agrupado = {};
+        dadosFiltrados.forEach(row => {
+            agrupado[row.Categoria] = (agrupado[row.Categoria] || 0) + row.Valor;
+        });
+        const categorias = Object.keys(agrupado);
+        const valores = Object.values(agrupado);
+
+        if (charts.categoria) charts.categoria.destroy();
+        const ctx = document.getElementById('chartCategoria').getContext('2d');
+        charts.categoria = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categorias,
+                datasets: [{ data: valores, backgroundColor: COLOR_PALETTE }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } }
+            }
+        });
+    }
+
+    function atualizarGraficoMes() {
+        const meses = {};
+        dadosOriginais.forEach(row => {
+            if (!row.Data || isNaN(row.Data)) return;
+            const ano = row.Data.getFullYear();
+            const mes = row.Data.getMonth(); // 0-11
+            const key = `${ano}-${String(mes + 1).padStart(2, '0')}`;
+            meses[key] = (meses[key] || 0) + row.Valor;
+        });
+        let chaves = Object.keys(meses).sort();
+        // últimos 6 meses
+        if (chaves.length > 6) chaves = chaves.slice(-6);
+        const nomesMes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const labels = chaves.map(k => {
+            const [ano, m] = k.split('-');
+            const idx = parseInt(m, 10) - 1;
+            return `${nomesMes[idx]}/${ano}`;
+        });
+        const valores = chaves.map(k => meses[k]);
+
+        if (charts.mes) charts.mes.destroy();
+        const ctx = document.getElementById('chartMes').getContext('2d');
+        charts.mes = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Total por Mês', data: valores, backgroundColor: '#C8102E' }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
+    }
+
+    function atualizarGraficoCategoriasMes() {
+        const mapa = {}; // keyMes -> { categoria: valor }
+        dadosOriginais.forEach(row => {
+            if (!row.Data || isNaN(row.Data)) return;
+            const ano = row.Data.getFullYear();
+            const mes = row.Data.getMonth();
+            const key = `${ano}-${String(mes + 1).padStart(2, '0')}`;
+            if (!mapa[key]) mapa[key] = {};
+            mapa[key][row.Categoria] = (mapa[key][row.Categoria] || 0) + row.Valor;
+        });
+        let chaves = Object.keys(mapa).sort();
+        if (chaves.length > 6) chaves = chaves.slice(-6);
+
+        const categorias = [...new Set(dadosOriginais.map(r => r.Categoria))];
+        const nomesMes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const labels = chaves.map(k => {
+            const [ano, m] = k.split('-');
+            const idx = parseInt(m, 10) - 1;
+            return `${nomesMes[idx]}/${ano}`;
+        });
+
+        const datasets = categorias.map((cat, idx) => ({
+            label: cat,
+            data: chaves.map(k => mapa[k][cat] || 0),
+            backgroundColor: COLOR_PALETTE[idx % COLOR_PALETTE.length]
+        }));
+
+        if (charts.categoriasMes) charts.categoriasMes.destroy();
+        const ctx = document.getElementById('chartCategoriasMes').getContext('2d');
+        charts.categoriasMes = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { stacked: true, ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { stacked: true, ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
+    }
+
+    function atualizarGraficoTurno() {
+        const turnos = {};
+        dadosFiltrados.forEach(row => {
+            const turno = row.Timestamp || 'Não especificado';
+            turnos[turno] = (turnos[turno] || 0) + row.Valor;
+        });
+        const labels = Object.keys(turnos);
+        const valores = Object.values(turnos);
+
+        if (charts.turno) charts.turno.destroy();
+        const ctx = document.getElementById('chartTurno').getContext('2d');
+        charts.turno = new Chart(ctx, {
+            type: 'pie',
+            data: { labels, datasets: [{ data: valores, backgroundColor: COLOR_PALETTE }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } }
+            }
+        });
+    }
+
+    function atualizarGraficoSemanal() {
+        const semanas = {}; // key = ano-Wnn
+        dadosOriginais.forEach(row => {
+            if (!row.Data || isNaN(row.Data)) return;
+            const info = getSemanaISO(row.Data);
+            if (!info) return;
+            const key = `${info.ano}-W${String(info.semana).padStart(2, '0')}`;
+            semanas[key] = (semanas[key] || 0) + row.Valor;
+        });
+        let chaves = Object.keys(semanas).sort();
+        if (chaves.length > 10) chaves = chaves.slice(-10);
+
+        const labels = chaves.map(k => {
+            const [ano, w] = k.split('-W');
+            return `Sem ${w}/${ano}`;
+        });
+        const valores = chaves.map(k => semanas[k]);
+
+        if (charts.semanal) charts.semanal.destroy();
+        const ctx = document.getElementById('chartSemanal').getContext('2d');
+        charts.semanal = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'Total Semanal', data: valores, borderColor: '#C8102E', backgroundColor: 'rgba(200,16,46,0.1)', tension: 0.4 }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#fff' } } },
+                scales: {
+                    x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                }
+            }
+        });
+    }
+
+    // Top 5 dias com mais eventos
+    function atualizarTop5() {
+        const porDia = {};
+        dadosFiltrados.forEach(row => {
+            const chave = row.Data && !isNaN(row.Data)
+                ? row.Data.toISOString().slice(0, 10)
+                : `D${row.Dia}`;
+            if (!porDia[chave]) {
+                porDia[chave] = {
+                    total: 0,
+                    categorias: {},
+                    dataObj: row.Data,
+                    dia: row.Dia
+                };
+            }
+            porDia[chave].total += row.Valor;
+            porDia[chave].categorias[row.Categoria] = (porDia[chave].categorias[row.Categoria] || 0) + row.Valor;
+        });
+
+        const ranking = Object.entries(porDia)
+            .map(([_, info]) => {
+                const catDominante = Object.entries(info.categorias).sort((a, b) => b[1] - a[1])[0];
+                return {
+                    dataObj: info.dataObj,
+                    dia: info.dia,
+                    total: info.total,
+                    categoriaDominante: catDominante ? catDominante[0] : '-'
+                };
+            })
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+
+        const tbody = document.querySelector('#tableTop5 tbody');
+        tbody.innerHTML = '';
+        ranking.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            const labelData = item.dataObj && !isNaN(item.dataObj)
+                ? formatarDataBR(item.dataObj)
+                : `Dia ${item.dia}`;
+            tr.innerHTML = `
+                <td>${idx + 1}º</td>
+                <td>${labelData}</td>
+                <td>${item.total}</td>
+                <td>${item.categoriaDominante}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Tabela detalhada
+    function atualizarTabela() {
+        const tbody = document.querySelector('#dataTable tbody');
+        tbody.innerHTML = '';
+        dadosFiltrados.forEach(row => {
+            const tr = document.createElement('tr');
+            const dataStr = row.Data ? formatarDataBR(row.Data) : '';
+            tr.innerHTML = `
+                <td>${dataStr}</td>
+                <td>${row.Dia}</td>
+                <td>${row.Categoria}</td>
+                <td>${row.Valor}</td>
+                <td>${row.Timestamp}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Chips de categoria
+    function criarChipsCategoria() {
+        const container = document.getElementById('categoryChips');
+        const categorias = [...new Set(dadosOriginais.map(r => r.Categoria))];
+        const selecionadasAntes = new Set(categoriasAtivas);
+        container.innerHTML = '';
+
+        categorias.forEach(cat => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.textContent = cat;
+            if (selecionadasAntes.has(cat)) {
+                chip.classList.add('active');
+            }
+            chip.onclick = () => {
+                chip.classList.toggle('active');
+                if (chip.classList.contains('active')) {
+                    categoriasAtivas.add(cat);
+                } else {
+                    categoriasAtivas.delete(cat);
+                }
+                aplicarFiltros();
+            };
+            container.appendChild(chip);
+        });
+    }
+
+    // Mensagens de status
+    function mostrarStatus(mensagem, tipo) {
+        const container = document.getElementById('statusContainer');
+        container.innerHTML = `<div class="status-message status-${tipo}">${mensagem}</div>`;
+        setTimeout(() => { container.innerHTML = ''; }, 5000);
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('dataMonitoramento').valueAsDate = new Date();
+        carregarDadosDaPlanilha();
+        setInterval(carregarDadosDaPlanilha, 30000); // auto-refresh 30s
+    });
+</script>
 </body>
 </html>
