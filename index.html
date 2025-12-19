@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard CSV • CBMERJ</title>
+    <title>Painel • CBMERJ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -862,6 +862,7 @@ header {
             'Preenchimento Remoto de formulário',
             'Preenchimento remoto sem exame de local',
             'Agendar D+1'
+            'Exame de local'
         ];
         categorias.forEach(cat => {
             const inputs = document.querySelectorAll(`input[data-categoria="${cat}"]`);
@@ -892,6 +893,7 @@ header {
             'Preenchimento Remoto de formulário',
             'Preenchimento remoto sem exame de local',
             'Agendar D+1'
+            'Exame de local'
         ];
         const horarios = ['11h30min', '16h', '21h', '06h'];
 
