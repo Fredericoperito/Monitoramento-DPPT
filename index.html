@@ -902,19 +902,31 @@ const categorias = [
 const horarios = ['11h30min', '16h', '21h', '06h'];
 
 categorias.forEach(cat => {
-    if (cat === 'Preenchimento remoto sem exame de local' || cat === 'Exame de local') {
-        // Campo único
-        const inputUnico = document.querySelector(`input[data-categoria="${cat}"][data-horario="unico"]`);
-        const valor = parseInt(inputUnico?.value) || 0;
-        payload[`${cat}_quant_unico`] = valor;
-    } else {
-        // Campos com 4 horários
-        horarios.forEach(hor => {
-            const input = document.querySelector(`input[data-categoria="${cat}"][data-horario="${hor}"]`);
-            const valor = parseInt(input?.value) || 0;
-            payload[`${cat}_quant_${hor}`] = valor;
-        });
+  if (cat === 'Preenchimento remoto sem exame de local' || cat === 'Exame de local') {
+    const valor = payload[`${cat}_quant_unico`];
+    if (valor > 0) {
+      dadosOriginais.push({
+        Data: dataObj,
+        Dia: dia,
+        Categoria: normalizeCategory(cat),
+        Valor: valor,
+        Timestamp: 'único'
+      });
     }
+  } else {
+    horarios.forEach(hor => {
+      const valor = payload[`${cat}_quant_${hor}`];
+      if (valor > 0) {
+        dadosOriginais.push({
+          Data: dataObj,
+          Dia: dia,
+          Categoria: normalizeCategory(cat),
+          Valor: valor,
+          Timestamp: hor
+        });
+      }
+    });
+  }
 });
         try {
             mostrarStatus('Enviando dados...', 'info');
