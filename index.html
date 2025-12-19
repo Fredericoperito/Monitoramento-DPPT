@@ -279,6 +279,23 @@ header {
             color: #fff;
             font-size: 0.95em;
         }
+        .search-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.search-wrapper input[type="text"] {
+    padding-left: 32px; /* espaço para a lupa */
+}
+
+.search-icon {
+    position: absolute;
+    left: 8px;
+    font-size: 0.9em;
+    opacity: 0.7;
+    pointer-events: none;
+}
         .category-chips {
             display: flex;
             gap: 10px;
@@ -728,9 +745,21 @@ header {
     </div>
 
     <!-- Tabela Detalhada -->
-    <div class="table-container">
-        <div class="chart-title">📋 Dados Detalhados</div>
-        <table id="dataTable">
+<div class="table-container">
+    <div class="chart-title">📋 Dados Detalhados</div>
+
+    <!-- Campo de busca na tabela detalhada -->
+    <div class="filter-row" style="margin-bottom: 10px;">
+        <label for="searchDetalhado" style="min-width:auto;">Buscar:</label>
+        <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchDetalhado"
+                   placeholder="Digite categoria, data, turno..."
+                   oninput="aplicarFiltros()">
+        </div>
+    </div>
+
+    <table id="dataTable">
             <thead>
             <tr>
                 <th>Data</th>
@@ -1021,22 +1050,40 @@ header {
     }
 
     // Aplicar filtros básicos (dia mínimo/máximo + categorias ativas)
-    function aplicarFiltros() {
-        const minDay = parseInt(document.getElementById('minDay').value) || 0;
-        const maxDay = parseInt(document.getElementById('maxDay').value) || 999;
+function aplicarFiltros() {
+    const minDay = parseInt(document.getElementById('minDay').value) || 0;
+    const maxDay = parseInt(document.getElementById('maxDay').value) || 999;
 
-        dadosFiltrados = dadosOriginais.filter(row => {
-            const diaOk = row.Dia >= minDay && row.Dia <= maxDay;
-            const catOk = categoriasAtivas.size === 0 || categoriasAtivas.has(row.Categoria);
-            return diaOk && catOk;
-        });
+    const buscaInput = document.getElementById('searchDetalhado');
+    const termoBusca = buscaInput ? buscaInput.value.toLowerCase().trim() : '';
 
-        criarChipsCategoria();
-        atualizarKPIs();
-        atualizarGraficos();
-        atualizarTabela();
-        atualizarTop5();
-    }
+    dadosFiltrados = dadosOriginais.filter(row => {
+        const diaOk = row.Dia >= minDay && row.Dia <= maxDay;
+        const catOk = categoriasAtivas.size === 0 || categoriasAtivas.has(row.Categoria);
+
+        let buscaOk = true;
+        if (termoBusca) {
+            const dataStr = row.Data ? formatarDataBR(row.Data) : '';
+            const textoLinha = [
+                dataStr,
+                String(row.Dia),
+                String(row.Categoria),
+                String(row.Valor),
+                String(row.Timestamp)
+            ].join(' ').toLowerCase();
+
+            buscaOk = textoLinha.includes(termoBusca);
+        }
+
+        return diaOk && catOk && buscaOk;
+    });
+
+    criarChipsCategoria();
+    atualizarKPIs();
+    atualizarGraficos();
+    atualizarTabela();
+    atualizarTop5();
+}
 
     // Atualizar KPIs
     function atualizarKPIs() {
