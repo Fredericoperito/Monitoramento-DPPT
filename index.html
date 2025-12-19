@@ -893,21 +893,27 @@ header {
         };
 
         const categorias = [
-            'Fora do parâmetro',
-            'Preenchimento Remoto de formulário',
-            'Preenchimento remoto sem exame de local',
-            'Agendar D+1',
-            'Exame de local'
+  'Fora do parâmetro',
+  'Preenchimento Remoto de formulário',
+  'Agendar D+1',
+  'Preenchimento remoto sem exame de local',
+  'Exame de local'
         ];
-        const horarios = ['11h30min', '16h', '21h', '06h'];
+const horarios = ['11h30min', '16h', '21h', '06h'];
 
-        categorias.forEach(cat => {
-            horarios.forEach(hor => {
-                const input = document.querySelector(`input[data-categoria="${cat}"][data-horario="${hor}"]`);
-                const valor = parseInt(input.value) || 0;
-                payload[`${cat}_quant_${hor}`] = valor;
-            });
+categorias.forEach(cat => {
+    if (cat === 'Preenchimento remoto sem exame de local' || cat === 'Exame de local') {
+        const inputUnico = document.querySelector(`input[data-categoria="${cat}"][data-horario="unico"]`);
+        const valor = parseInt(inputUnico?.value) || 0;
+        payload[`${cat}_quant_unico`] = valor;
+    } else {
+        horarios.forEach(hor => {
+            const input = document.querySelector(`input[data-categoria="${cat}"][data-horario="${hor}"]`);
+            const valor = parseInt(input?.value) || 0;
+            payload[`${cat}_quant_${hor}`] = valor;
         });
+    }
+});
 
         try {
             mostrarStatus('Enviando dados...', 'info');
