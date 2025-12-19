@@ -645,19 +645,17 @@ header {
       ⬐AGENDADOS PELO PERITO DO DIA ANTERIOR⬎
         <tr>
                 <td>Preenchimento remoto sem exame de local</td>
-                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="11h30min"></td>
-                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="16h"></td>
-                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="21h"></td>
-                <td><input type="number" min="0" value="0" data-categoria="Preenchimento remoto sem exame de local" data-horario="06h"></td>
-                <td class="somatorio" data-categoria="Preenchimento remoto sem exame de local">0</td>
+<td colspan="4">
+    <input type="number" min="0" value="0" style="width:100%;"
+           data-categoria="Preenchimento remoto sem exame de local"
+           data-horario="unico">
             </tr>
             <tr>
     <td>Exame de local</td>
-    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="11h30min"></td>
-    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="16h"></td>
-    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="21h"></td>
-    <td><input type="number" min="0" value="0" data-categoria="Exame de local" data-horario="06h"></td>
-    <td class="somatorio" data-categoria="Exame de local">0</td>
+<td colspan="4">
+    <input type="number" min="0" value="0" style="width:100%;"
+           data-categoria="Exame de local"
+           data-horario="unico"></td>
 </tr>
             </tbody>
         </table>
@@ -864,11 +862,11 @@ header {
 
     function atualizarSomatorios() {
         const categorias = [
-            'Fora do parâmetro',
-            'Preenchimento Remoto de formulário',
-            'Preenchimento remoto sem exame de local',
-            'Agendar D+1',
-            'Exame de local'
+  'Fora do parâmetro',
+  'Preenchimento Remoto de formulário',
+  'Agendar D+1',
+  'Preenchimento remoto sem exame de local',
+  'Exame de local'
         ];
         categorias.forEach(cat => {
             const inputs = document.querySelectorAll(`input[data-categoria="${cat}"]`);
